@@ -52,6 +52,8 @@ OCR and the custom camera view need a **development build** or TestFlight binary
 
 4. Scan the QR code with Expo Go on Android, or press `w` for web.
 
+Web is a UI preview only. This SDK build of `expo-sqlite` does not ship `wa-sqlite.wasm`, so the web bundle uses an in-memory collection (refresh clears cards). iOS / EAS / Expo Go persist to SQLite.
+
 Windows cannot compile an iOS binary. Use EAS (below) for a device build, camera, and OCR.
 
 ### Scripts
