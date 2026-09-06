@@ -95,8 +95,8 @@ export default function CardDetailScreen() {
       {comps ? (
         <View style={styles.comps}>
           <Text style={styles.banner}>{comps.sourceMessage}</Text>
-          <Last5AvgStamp avg={comps.fixed} />
-          <Last5AvgStamp avg={comps.auction} />
+          <Last5AvgStamp avg={comps.fixed} sourceStatus={comps.sourceStatus} />
+          <Last5AvgStamp avg={comps.auction} sourceStatus={comps.sourceStatus} />
         </View>
       ) : null}
       <GoldButton label="Delete card" tone="danger" onPress={confirmDelete} />

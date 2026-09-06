@@ -24,6 +24,7 @@ function sold(partial: Partial<CompSold> & Pick<CompSold, 'id' | 'soldAt' | 'pri
     fxRateToAud: partial.fxRateToAud ?? null,
     fxStampedAt: partial.fxStampedAt ?? null,
     source: 'fixture',
+    sourceUrl: 'https://example.invalid/sample/fixture',
     ...partial,
   };
 }

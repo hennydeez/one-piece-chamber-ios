@@ -27,6 +27,7 @@ const baseSold: CompSold = {
   fxRateToAud: null,
   fxStampedAt: null,
   source: 'fixture',
+  sourceUrl: 'https://example.invalid/sample/fixture',
 };
 
 describe('Scout match', () => {

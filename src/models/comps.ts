@@ -26,6 +26,11 @@ export interface CompSold {
   fxRateToAud: number | null;
   fxStampedAt: string | null;
   source: string;
+  /** URL of the sold listing (eBay sold, PriceCharting, etc.) for accuracy checks. */
+  sourceUrl: string;
+  /** Button / link caption. Defaults to a generic “Open sold listing”. */
+  sourceLabel?: string;
+  /** @deprecated Prefer sourceUrl. Accepted from live payloads as a fallback. */
   listingUrl?: string;
 }
 
@@ -40,7 +45,7 @@ export interface Last5Avg {
   channel: SaleChannel;
 }
 
-export type CompsSourceStatus = 'live' | 'unconfigured' | 'error';
+export type CompsSourceStatus = 'live' | 'unconfigured' | 'error' | 'sample';
 
 export interface CompsResult {
   query: CompQuery;

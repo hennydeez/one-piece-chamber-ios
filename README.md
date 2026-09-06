@@ -16,13 +16,13 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 
 - **Collections** — two-column card grid, empty state, tap through to detail.
 - **Add Card** — in-app camera (`expo-camera`) or photo library (`expo-image-picker`). Fields: card code, type (`Raw` \| `PSA` \| `BGS` \| `TAG`), grade, cert #, optional print note, language (default `EN`), purchase date, purchase price AUD, notes. OCR is best-effort and every prefilled value is editable.
-- **Comps** — last ≤5 **completed solds** matching Scout rules. The stamp label is exactly **Last-5 avg (AUD)** (arithmetic mean of those AUD prices). If fewer than 5 solds match, `n` is shown honestly. The app never invents comps or labels fake prices as real.
+- **Comps** — last ≤5 **completed solds** matching Scout rules. The stamp label is exactly **Last-5 avg (AUD)** (arithmetic mean of those AUD prices). If fewer than 5 solds match, `n` is shown honestly. Each sold row has a tappable **source link** (`sourceUrl`, optional `sourceLabel`) to the listing / PriceCharting / eBay sold page so you can check it. Fake prices are never labeled as live.
 
 ### Scout match
 
 Completed solds only. A sold matches when **code ∧ print ∧ language ∧ grade** all match. Raw is never a slab. Newest first, max 5, **AUD first**, FX rate + timestamp stamped on conversions, auctions kept in a separate last-5 from fixed/BIN solds.
 
-There is no live solds API wired in v1. A `CompsService` interface sits in front of a stub that returns an honest empty result (`sourceStatus: unconfigured`). Set `EXPO_PUBLIC_COMPS_API_URL` later to use `HttpCompsService` — on error it still returns no prices.
+There is no live solds API wired in v0.1. A `CompsService` interface sits in front of a stub that returns **SAMPLE** rows (`sourceStatus: sample`) with fake `https://example.invalid/…` source URLs, each labeled “not live”. Those rows exist so source links can be tapped; they are not live solds and the Last-5 avg from them is not a live market figure. Set `EXPO_PUBLIC_COMPS_API_URL` later to use `HttpCompsService` — live rows should include `sourceUrl` (and optional `sourceLabel`). On error the HTTP provider still invents no prices.
 
 ## Stack
 
@@ -121,8 +121,8 @@ src/services/comps/  CompsService, Scout match, Last-5 avg
 ## Honesty rules
 
 - OCR messages say “attempted” or “failed”. Prefill is never treated as confirmed.
-- The comps stub does not emit sample dollar amounts.
-- **Last-5 avg (AUD)** is hidden as `Unavailable` when `n=0`.
+- The comps stub emits SAMPLE rows only, with `example.invalid` source URLs labeled “not live”. They are never presented as live solds.
+- **Last-5 avg (AUD)** is hidden as `Unavailable` when `n=0`. A sample average is labeled as sample, not live.
 - No ripped One Piece IP art is included.
 
 ## License

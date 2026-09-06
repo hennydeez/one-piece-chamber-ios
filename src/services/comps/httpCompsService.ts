@@ -13,6 +13,12 @@ function asCompletedSold(value: unknown): CompSold | null {
   if (typeof row.priceOriginal !== 'number') return null;
   if (typeof row.currencyOriginal !== 'string') return null;
   if (typeof row.type !== 'string') return null;
+  const sourceUrl =
+    typeof row.sourceUrl === 'string' && row.sourceUrl.trim()
+      ? row.sourceUrl.trim()
+      : typeof row.listingUrl === 'string' && row.listingUrl.trim()
+        ? row.listingUrl.trim()
+        : '';
   return {
     id: row.id,
     cardCode: row.cardCode,
@@ -29,9 +35,13 @@ function asCompletedSold(value: unknown): CompSold | null {
     fxRateToAud: typeof row.fxRateToAud === 'number' ? row.fxRateToAud : null,
     fxStampedAt: typeof row.fxStampedAt === 'string' ? row.fxStampedAt : null,
     source: typeof row.source === 'string' ? row.source : 'live',
+    sourceUrl,
+    sourceLabel: typeof row.sourceLabel === 'string' ? row.sourceLabel : undefined,
     listingUrl: typeof row.listingUrl === 'string' ? row.listingUrl : undefined,
   };
 }
+
+export { asCompletedSold };
 
 /**
  * Live provider. Expects a JSON array (or `{ solds: [] }`) of completed solds.

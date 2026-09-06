@@ -62,7 +62,7 @@ export default function CompsScreen() {
         <Text style={styles.rulesBody}>
           Newest ≤5 per channel · AUD first · FX stamped on conversions · auctions kept
           separate · {LAST5_AVG_LABEL} is an arithmetic mean · n is honest when under 5 ·
-          fake prices are never labeled as real.
+          each sold has a tappable source link · fake prices are never labeled as live.
         </Text>
       </View>
 
@@ -99,8 +99,8 @@ export default function CompsScreen() {
           <View style={[styles.banner, result.sourceStatus !== 'live' && styles.bannerWarn]}>
             <Text style={styles.bannerText}>{result.sourceMessage}</Text>
           </View>
-          <Last5AvgStamp avg={result.fixed} />
-          <Last5AvgStamp avg={result.auction} />
+          <Last5AvgStamp avg={result.fixed} sourceStatus={result.sourceStatus} />
+          <Last5AvgStamp avg={result.auction} sourceStatus={result.sourceStatus} />
         </View>
       ) : null}
     </ChamberScreen>
