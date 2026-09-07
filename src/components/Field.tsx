@@ -38,7 +38,8 @@ const styles = StyleSheet.create({
     color: chamber.ink,
     borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    minHeight: 48,
     fontSize: 16,
   },
   hint: {

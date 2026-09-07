@@ -117,7 +117,7 @@ describe('createOcrService', () => {
     assert.equal(attempt.fields.cardCode, 'OP01-001');
     assert.equal(attempt.fields.type, 'PSA');
     assert.equal(attempt.fields.grade, '10');
-    assert.match(attempt.message, /OCR attempted/);
+    assert.match(attempt.message, /Check these fields/);
   });
 
   it('does not report success when OCR ran but found no fields', async () => {
@@ -133,7 +133,7 @@ describe('createOcrService', () => {
     const attempt = await service.recognize('file:///card.jpg');
     assert.equal(attempt.status, 'ok');
     assert.equal(attempt.fields.cardCode, '');
-    assert.match(attempt.message, /found no card fields/);
+    assert.match(attempt.message, /OCR found nothing/);
   });
 
   it('never throws to the caller', async () => {

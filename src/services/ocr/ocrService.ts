@@ -14,9 +14,9 @@ export interface OcrService {
   recognize(imageUri: string): Promise<OcrAttempt>;
 }
 
-export const OCR_UNAVAILABLE_EXPO_GO = 'OCR unavailable in Expo Go — enter fields manually';
-export const OCR_UNAVAILABLE = 'OCR unavailable — enter fields manually';
-export const OCR_FAILED = 'OCR failed — enter fields manually';
+export const OCR_UNAVAILABLE_EXPO_GO = 'OCR needs a full app build. Type it in.';
+export const OCR_UNAVAILABLE = 'OCR unavailable. Type it in.';
+export const OCR_FAILED = 'OCR missed. Type it in.';
 
 type ExtractorModule = {
   isSupported?: boolean;
@@ -108,8 +108,8 @@ export function createOcrService(runtime: OcrRuntime): OcrService {
           text,
           fields,
           message: foundSomething
-            ? 'OCR attempted — review and edit every prefilled field before saving.'
-            : 'OCR ran but found no card fields. Enter them manually.',
+            ? 'Check these fields. OCR can miss.'
+            : 'OCR found nothing. Type it in.',
         };
       } catch (error) {
         if (isMissingNativeModuleError(error)) {

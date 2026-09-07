@@ -92,7 +92,7 @@ export class HttpCompsService implements CompsService {
         query,
         solds,
         'live',
-        `Live completed solds from configured source. Showing newest ≤5 per channel after Scout match.`,
+        'Live solds. Newest 5 per channel.',
       );
     } catch {
       return emptyCompsResult(

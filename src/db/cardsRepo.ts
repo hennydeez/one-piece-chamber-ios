@@ -3,6 +3,7 @@ import type { CardDraft, CardType, CollectionCard } from '../models/card';
 import { normalizeGrade, normalizePrintNote } from '../models/card';
 import { parseAudInput } from '../lib/money';
 import { createId } from '../lib/ids';
+import { validateGrade } from '../lib/grade';
 
 interface CardRow {
   id: string;
@@ -66,6 +67,8 @@ export function validateDraft(draft: CardDraft): string | null {
   if (draft.purchaseDate.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(draft.purchaseDate.trim())) {
     return 'Purchase date must be YYYY-MM-DD.';
   }
+  const gradeError = validateGrade(draft.grade, draft.type);
+  if (gradeError) return gradeError;
   return null;
 }
 

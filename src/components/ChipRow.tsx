@@ -19,7 +19,8 @@ export function ChipRow<T extends string>({ label, values, selected, onSelect }:
             <Pressable
               key={value}
               onPress={() => onSelect(value)}
-              style={[styles.chip, active && styles.chipOn]}>
+              style={[styles.chip, active && styles.chipOn]}
+              hitSlop={4}>
               <Text style={[styles.chipText, active && styles.chipTextOn]}>{value}</Text>
             </Pressable>
           );
@@ -49,8 +50,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: chamber.panelEdge,
     backgroundColor: chamber.bgSunken,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 999,
   },
   chipOn: {

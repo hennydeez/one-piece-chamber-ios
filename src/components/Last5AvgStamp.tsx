@@ -3,36 +3,29 @@ import type { CompsSourceStatus, Last5Avg } from '@/src/models/comps';
 import { formatAud } from '@/src/lib/money';
 import { formatDisplayDate } from '@/src/lib/dates';
 import { openExternalUrl } from '@/src/lib/openUrl';
-import { isSampleSourceUrl, resolveSourceLabel, resolveSourceUrl } from '@/src/services/comps/sourceLink';
+import { resolveSourceLabel, resolveSourceUrl } from '@/src/services/comps/sourceLink';
 import { chamber } from '@/src/theme/chamber';
 
 export function Last5AvgStamp({
   avg,
-  sourceStatus,
 }: {
   avg: Last5Avg;
   sourceStatus?: CompsSourceStatus;
 }) {
-  const sample = sourceStatus === 'sample';
-
   return (
     <View style={styles.card}>
-      <Text style={styles.channel}>{avg.channel === 'auction' ? 'Auctions' : 'Fixed / BIN solds'}</Text>
+      <Text style={styles.channel}>{avg.channel === 'auction' ? 'Auctions' : 'Fixed / BIN'}</Text>
       <Text style={styles.label}>{avg.label}</Text>
       <Text style={styles.value}>
         {avg.averageAud == null ? 'Unavailable' : formatAud(avg.averageAud)}
       </Text>
-      {sample && avg.averageAud != null ? (
-        <Text style={styles.sampleAvg}>Sample average — not a live market figure</Text>
-      ) : null}
       <Text style={styles.n}>{avg.honestCountLabel}</Text>
       {avg.solds.length === 0 ? (
-        <Text style={styles.empty}>No completed solds in this channel. Nothing was invented.</Text>
+        <Text style={styles.empty}>None.</Text>
       ) : (
         avg.solds.map((sold) => {
           const url = resolveSourceUrl(sold);
           const label = resolveSourceLabel(sold);
-          const sampleLink = url ? isSampleSourceUrl(url) : sample;
           return (
             <View key={sold.id} style={styles.row}>
               <Text style={styles.soldPrice}>{formatAud(sold.priceAud)}</Text>
@@ -49,10 +42,9 @@ export function Last5AvgStamp({
                   onPress={() => void openExternalUrl(url)}
                   style={styles.sourceHit}>
                   <Text style={styles.sourceLink}>{label}</Text>
-                  {sampleLink ? <Text style={styles.sampleHint}>Fake placeholder URL · example.invalid</Text> : null}
                 </Pressable>
               ) : (
-                <Text style={styles.noSource}>No source link on this sold</Text>
+                <Text style={styles.noSource}>No source link</Text>
               )}
             </View>
           );
@@ -86,11 +78,6 @@ const styles = StyleSheet.create({
     color: chamber.ink,
     fontSize: 28,
     fontWeight: '700',
-  },
-  sampleAvg: {
-    color: chamber.goldSoft,
-    fontSize: 12,
-    fontWeight: '600',
   },
   n: {
     color: chamber.goldSoft,
@@ -127,11 +114,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     textDecorationLine: 'underline',
-  },
-  sampleHint: {
-    color: chamber.faint,
-    fontSize: 11,
-    marginTop: 2,
   },
   noSource: {
     color: chamber.faint,
