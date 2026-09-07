@@ -59,10 +59,10 @@ export default function AddCardScreen() {
       const card = await saveDraft(draft);
       setDraft(emptyDraft());
       setOcrMessage(null);
-      // Collections is already mounted. Opening detail is best-effort so a
-      // router/module failure after persist cannot look like a failed save.
+      // Push keeps the tab stack so Back returns to Add/Collections.
+      // Collections fallback only if routing itself throws after persist.
       try {
-        router.replace(`/card/${card.id}`);
+        router.push(`/card/${card.id}`);
       } catch {
         router.replace('/(tabs)');
       }
