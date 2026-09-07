@@ -1,3 +1,4 @@
+import { isExpoGoHost, optionalNativeModule } from '../../lib/nativeModules';
 import { emptyPrefill, parseCardText, type OcrPrefill } from './parseCardText';
 
 export type OcrStatus = 'ok' | 'unsupported' | 'failed';
@@ -123,30 +124,10 @@ export function createOcrService(runtime: OcrRuntime): OcrService {
 function defaultRuntime(): OcrRuntime {
   return {
     hasNativeModule() {
-      try {
-        const core = require('expo-modules-core') as {
-          requireOptionalNativeModule?: (name: string) => unknown;
-        };
-        if (typeof core.requireOptionalNativeModule !== 'function') {
-          // Probe API missing — try the import and let catch handle a hard miss.
-          return true;
-        }
-        return core.requireOptionalNativeModule('ExpoTextExtractor') != null;
-      } catch {
-        return true;
-      }
+      return optionalNativeModule('ExpoTextExtractor') != null;
     },
     isExpoGo() {
-      try {
-        const imported = require('expo-constants') as {
-          default?: { executionEnvironment?: string };
-          executionEnvironment?: string;
-        };
-        const env = imported.default?.executionEnvironment ?? imported.executionEnvironment;
-        return env === 'storeClient';
-      } catch {
-        return false;
-      }
+      return isExpoGoHost();
     },
     loadExtractor() {
       return import('expo-text-extractor');

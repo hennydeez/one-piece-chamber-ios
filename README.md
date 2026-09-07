@@ -11,7 +11,14 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.2.0` |
+| App version | `0.3.0` |
+
+## What v0.3 does
+
+- **Save in Expo Go** — Add Card persists the SQLite row *before* any photo-file work. A missing `ExpoAsset` / `ExponentConstants` / `expo-file-system` JS module cannot take down `main` and lose the card.
+- **Photo copy** — copies into the document directory only through the already-present native `ExponentFileSystem` module. The app never `import()`s `expo-file-system` or `expo-asset` on the save path (those packages call `requireNativeModule` at evaluation time and red-screen Expo Go). If the native module is missing, the picker/camera URI is stored as-is.
+- **After save** — opens the new card detail when routing works; otherwise falls back to Collections. Reload still shows the card either way.
+- **OCR** — unchanged from v0.2. Expo Go still soft-fails with `OCR unavailable in Expo Go — enter fields manually`. No claim that OCR works in Expo Go.
 
 ## What v0.2 does
 
@@ -66,6 +73,8 @@ The custom camera view still needs a **development build** or TestFlight binary 
 Web is a UI preview only. This SDK build of `expo-sqlite` does not ship `wa-sqlite.wasm`, so the web bundle uses an in-memory collection (refresh clears cards). iOS / EAS / Expo Go persist to SQLite.
 
 Windows cannot compile an iOS binary. Use EAS (below) for a device build, camera, and OCR.
+
+v0.3 save in Expo Go does not require a custom native binary. Add Card writes SQLite first; photo file-copy is best-effort.
 
 ### Scripts
 

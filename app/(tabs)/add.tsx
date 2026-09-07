@@ -59,7 +59,13 @@ export default function AddCardScreen() {
       const card = await saveDraft(draft);
       setDraft(emptyDraft());
       setOcrMessage(null);
-      router.push(`/card/${card.id}`);
+      // Collections is already mounted. Opening detail is best-effort so a
+      // router/module failure after persist cannot look like a failed save.
+      try {
+        router.replace(`/card/${card.id}`);
+      } catch {
+        router.replace('/(tabs)');
+      }
     } catch (error) {
       Alert.alert('Could not save', error instanceof Error ? error.message : 'Unknown error');
     } finally {

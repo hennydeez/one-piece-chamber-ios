@@ -3,16 +3,15 @@ import { useSQLiteContext } from 'expo-sqlite';
 import type { CardDraft, CollectionCard } from '@/src/models/card';
 import {
   deleteCard as deleteCardRow,
-  draftToPersistable,
   getCard as getCardRow,
   listCards,
   upsertCard,
-  validateDraft,
 } from '@/src/db/cardsRepo';
 import { persistCardPhoto } from '@/src/lib/photos';
 import { compsService } from '@/src/services/comps';
 import type { CompQuery } from '@/src/models/comps';
 import { ChamberContext } from './ChamberContext';
+import { persistValidatedDraft } from './persistDraft';
 
 export function ChamberProvider({ children }: { children: ReactNode }) {
   const db = useSQLiteContext();
@@ -32,11 +31,10 @@ export function ChamberProvider({ children }: { children: ReactNode }) {
 
   const saveDraft = useCallback(
     async (draft: CardDraft, existing?: CollectionCard) => {
-      const error = validateDraft(draft);
-      if (error) throw new Error(error);
-      const photoUri = draft.photoUri ? await persistCardPhoto(draft.photoUri) : null;
-      const card = draftToPersistable({ ...draft, photoUri }, existing);
-      await upsertCard(db, card);
+      const card = await persistValidatedDraft(draft, existing, {
+        persistPhoto: persistCardPhoto,
+        upsert: (row) => upsertCard(db, row),
+      });
       await refresh();
       return card;
     },
