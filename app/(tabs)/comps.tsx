@@ -8,7 +8,7 @@ import { Last5AvgStamp } from '@/src/components/Last5AvgStamp';
 import { useChamber } from '@/src/context/ChamberContext';
 import { CARD_TYPES, isSlab, type CardType, type CollectionCard } from '@/src/models/card';
 import type { CompQuery, CompsResult } from '@/src/models/comps';
-import { filterNumericGrade } from '@/src/lib/grade';
+import { filterNumericGrade, gradeFieldHint } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp, type CompLanguage } from '@/src/lib/language';
 import { chamber } from '@/src/theme/chamber';
 
@@ -112,7 +112,7 @@ export default function CompsScreen() {
           placeholder={type === 'BGS' ? '9.5' : '10'}
           keyboardType="decimal-pad"
           onChangeText={(value) => setGrade(filterNumericGrade(value, type))}
-          hint="Numbers only"
+          hint={gradeFieldHint(type)}
         />
       ) : null}
       <GoldButton label="Get comps" onPress={runLookup} loading={loading} disabled={!query.cardCode} />

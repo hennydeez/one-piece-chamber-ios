@@ -6,7 +6,7 @@ import { ChipRow } from './ChipRow';
 import { GoldButton } from './GoldButton';
 import { ChamberMark } from './ChamberMark';
 import { todayIsoDate } from '@/src/lib/dates';
-import { filterNumericGrade } from '@/src/lib/grade';
+import { filterNumericGrade, gradeFieldHint } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp } from '@/src/lib/language';
 
 interface Props {
@@ -70,7 +70,7 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
           placeholder={draft.type === 'BGS' ? '9.5' : '10'}
           keyboardType="decimal-pad"
           onChangeText={(grade) => set('grade', filterNumericGrade(grade, draft.type))}
-          hint="Numbers only. Optional."
+          hint={gradeFieldHint(draft.type, { optional: true })}
         />
       ) : null}
       {isSlab(draft.type) ? (

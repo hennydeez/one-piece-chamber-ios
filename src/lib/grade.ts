@@ -27,3 +27,15 @@ export function validateGrade(value: string, type: CardType): string | null {
   }
   return null;
 }
+
+export function gradeFieldHint(type: CardType, opts?: { optional?: boolean }): string {
+  const base =
+    type === 'PSA'
+      ? 'Numbers only. Whole numbers.'
+      : type === 'BGS'
+        ? 'Numbers only. Decimals ok.'
+        : type === 'TAG'
+          ? 'Numbers only. Integer or one decimal.'
+          : 'Numbers only';
+  return opts?.optional ? `${base} Optional.` : base;
+}
