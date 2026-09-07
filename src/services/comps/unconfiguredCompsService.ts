@@ -1,8 +1,7 @@
 import type { CompQuery, CompsResult, CompsService } from '../../models/comps';
 import { emptyCompsResult } from './last5Avg';
 
-export const UNCONFIGURED_COMPS_MESSAGE =
-  'No comps source set. Add EXPO_PUBLIC_COMPS_API_URL for live solds.';
+export const UNCONFIGURED_COMPS_MESSAGE = 'No comps source set.';
 
 /**
  * Default when no live endpoint is configured.

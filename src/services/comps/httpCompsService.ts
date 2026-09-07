@@ -65,7 +65,7 @@ export class HttpCompsService implements CompsService {
         return emptyCompsResult(
           query,
           'error',
-          `Comps source returned HTTP ${response.status}. No prices were invented.`,
+          `Comps source failed (HTTP ${response.status}).`,
         );
       }
 
@@ -80,7 +80,7 @@ export class HttpCompsService implements CompsService {
         return emptyCompsResult(
           query,
           'error',
-          'Comps source returned an unexpected payload. No prices were invented.',
+          'Comps source sent a bad response.',
         );
       }
 
@@ -98,7 +98,7 @@ export class HttpCompsService implements CompsService {
       return emptyCompsResult(
         query,
         'error',
-        'Comps source could not be reached. No prices were invented.',
+        'Couldn’t reach comps.',
       );
     }
   }

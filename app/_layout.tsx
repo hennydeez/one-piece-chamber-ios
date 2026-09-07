@@ -43,7 +43,7 @@ export default function RootLayout() {
           <Stack.Screen name="card/[id]" options={{ title: 'Card' }} />
           <Stack.Screen
             name="capture"
-            options={{ title: 'Photograph', presentation: 'modal' }}
+            options={{ title: 'Photo', presentation: 'modal' }}
           />
         </Stack>
       </RootProviders>

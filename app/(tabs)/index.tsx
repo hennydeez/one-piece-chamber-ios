@@ -33,7 +33,7 @@ export default function CollectionsScreen() {
   }
 
   return (
-    <ChamberScreen title="Collections" subtitle={`${cards.length} card${cards.length === 1 ? '' : 's'} in the chamber`} scroll={false}>
+    <ChamberScreen title="Collections" subtitle={`${cards.length} card${cards.length === 1 ? '' : 's'}`} scroll={false}>
       <FlatList
         data={cards}
         keyExtractor={(item) => item.id}

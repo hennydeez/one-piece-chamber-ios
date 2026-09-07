@@ -26,8 +26,6 @@ export function selectLast5(solds: CompSold[]): CompSold[] {
 }
 
 export function honestCountLabel(n: number, maxN = LAST5_MAX): string {
-  if (n === 0) return 'n=0 of 5 — no completed solds matched';
-  if (n < maxN) return `n=${n} of ${maxN} — fewer than ${maxN} completed solds matched`;
   return `n=${n} of ${maxN}`;
 }
 
