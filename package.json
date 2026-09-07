@@ -12,7 +12,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/services/ocr/parseCardText.test.ts src/services/comps/last5Avg.test.ts src/services/comps/scoutMatch.test.ts src/services/comps/stubCompsService.test.ts src/services/comps/sourceLink.test.ts src/services/comps/httpCompsService.test.ts src/db/cardsRepo.test.ts"
+    "test": "tsx --test src/services/ocr/parseCardText.test.ts src/services/ocr/ocrService.test.ts src/services/comps/last5Avg.test.ts src/services/comps/scoutMatch.test.ts src/services/comps/stubCompsService.test.ts src/services/comps/sourceLink.test.ts src/services/comps/httpCompsService.test.ts src/db/cardsRepo.test.ts"
   },
   "dependencies": {
     "expo": "~57.0.20",
