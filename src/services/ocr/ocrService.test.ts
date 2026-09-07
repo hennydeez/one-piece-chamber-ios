@@ -54,9 +54,13 @@ describe('unsupportedOcrAttempt', () => {
 describe('createOcrService', () => {
   it('returns a soft Expo Go result without loading the extractor', async () => {
     let loaded = false;
+    let probed = false;
     const service = createOcrService(
       runtime({
-        hasNativeModule: () => false,
+        hasNativeModule: () => {
+          probed = true;
+          throw new Error("Cannot find native module 'ExpoTextExtractor'");
+        },
         isExpoGo: () => true,
         loadExtractor: async () => {
           loaded = true;
@@ -67,6 +71,7 @@ describe('createOcrService', () => {
 
     const attempt = await service.recognize('file:///card.jpg');
     assert.equal(loaded, false);
+    assert.equal(probed, false);
     assert.equal(attempt.status, 'unsupported');
     assert.equal(attempt.message, OCR_UNAVAILABLE_EXPO_GO);
     assert.equal(attempt.fields.cardCode, '');
@@ -75,7 +80,6 @@ describe('createOcrService', () => {
   it('catches a missing-module throw from the extractor import', async () => {
     const service = createOcrService(
       runtime({
-        isExpoGo: () => true,
         loadExtractor: async () => {
           throw new Error("Cannot find native module 'ExpoTextExtractor'");
         },
@@ -84,8 +88,8 @@ describe('createOcrService', () => {
 
     const attempt = await service.recognize('file:///card.jpg');
     assert.equal(attempt.status, 'unsupported');
-    assert.equal(attempt.message, OCR_UNAVAILABLE_EXPO_GO);
-    assert.equal(attempt.status !== 'ok', true);
+    assert.equal(attempt.message, OCR_UNAVAILABLE);
+    assert.equal(attempt.fields.cardCode, '');
   });
 
   it('returns a generic failed result for other OCR errors', async () => {
@@ -145,6 +149,24 @@ describe('createOcrService', () => {
     );
 
     const attempt = await service.recognize('file:///card.jpg');
+    assert.equal(attempt.status, 'unsupported');
+    assert.equal(attempt.message, OCR_UNAVAILABLE);
+  });
+
+  it('skips extraction when the optional native module is absent', async () => {
+    let loaded = false;
+    const service = createOcrService(
+      runtime({
+        hasNativeModule: () => false,
+        loadExtractor: async () => {
+          loaded = true;
+          throw new Error("Cannot find native module 'ExpoTextExtractor'");
+        },
+      }),
+    );
+
+    const attempt = await service.recognize('file:///card.jpg');
+    assert.equal(loaded, false);
     assert.equal(attempt.status, 'unsupported');
     assert.equal(attempt.message, OCR_UNAVAILABLE);
   });

@@ -75,8 +75,14 @@ export function createOcrService(runtime: OcrRuntime): OcrService {
       }
 
       try {
+        // Expo Go never ships ExpoTextExtractor. Detect it first so we never
+        // evaluate expo-text-extractor (its requireNativeModule red-screens).
+        if (runtime.isExpoGo()) {
+          return unsupportedOcrAttempt(true);
+        }
+
         if (!runtime.hasNativeModule()) {
-          return unsupportedOcrAttempt(runtime.isExpoGo());
+          return unsupportedOcrAttempt(false);
         }
 
         const extractor = await runtime.loadExtractor();
