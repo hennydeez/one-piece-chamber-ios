@@ -7,20 +7,9 @@ import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { GoldButton } from '@/src/components/GoldButton';
 import { useChamber } from '@/src/context/ChamberContext';
 import { emptyDraft, type CardDraft } from '@/src/models/card';
-import { expoOcrService } from '@/src/services/ocr/ocrService';
+import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
+import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
 import { chamber } from '@/src/theme/chamber';
-
-function applyOcr(draft: CardDraft, fields: Awaited<ReturnType<typeof expoOcrService.recognize>>['fields']): CardDraft {
-  return {
-    ...draft,
-    cardCode: draft.cardCode || fields.cardCode,
-    type: draft.type !== 'Raw' || !fields.type ? draft.type : fields.type,
-    grade: draft.grade || fields.grade,
-    certNumber: draft.certNumber || fields.certNumber,
-    printNote: draft.printNote || fields.printNote,
-    language: draft.language && draft.language !== 'EN' ? draft.language : fields.language || draft.language || 'EN',
-  };
-}
 
 export default function AddCardScreen() {
   const { saveDraft, pendingPhotoUri, setPendingPhotoUri } = useChamber();
@@ -31,9 +20,13 @@ export default function AddCardScreen() {
   const ingestPhoto = useCallback(async (uri: string) => {
     setDraft((current) => ({ ...current, photoUri: uri }));
     setOcrMessage('Attempting OCR…');
-    const attempt = await expoOcrService.recognize(uri);
-    setOcrMessage(attempt.message);
-    setDraft((current) => applyOcr({ ...current, photoUri: uri }, attempt.fields));
+    try {
+      const attempt = await expoOcrService.recognize(uri);
+      setOcrMessage(attempt.message);
+      setDraft((current) => applyOcrPrefill({ ...current, photoUri: uri }, attempt.fields));
+    } catch {
+      setOcrMessage(OCR_FAILED);
+    }
   }, []);
 
   useFocusEffect(

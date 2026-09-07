@@ -11,11 +11,14 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
+| App version | `0.2.0` |
 
-## What v1 does
+## What v0.2 does
 
 - **Collections** — two-column card grid, empty state, tap through to detail.
-- **Add Card** — in-app camera (`expo-camera`) or photo library (`expo-image-picker`). Fields: card code, type (`Raw` \| `PSA` \| `BGS` \| `TAG`), grade, cert #, optional print note, language (default `EN`), purchase date, purchase price AUD, notes. OCR is best-effort and every prefilled value is editable.
+- **Add Card** — in-app camera (`expo-camera`) or photo library (`expo-image-picker`). Fields: card code, type (`Raw` \| `PSA` \| `BGS` \| `TAG`), grade, cert #, optional print note, language (default `EN`), purchase date, purchase price AUD, notes.
+- **OCR autofill (EAS / dev client)** — after a snap or library pick, on-device OCR fills card code, grader, grade, and cert # when it can extract them. Every prefilled value stays editable. User-typed values are not overwritten.
+- **OCR in Expo Go** — `expo-text-extractor` is not in Expo Go. The app does **not** crash. Fields stay empty/manual with a message like `OCR unavailable in Expo Go — enter fields manually`. Save still works.
 - **Comps** — last ≤5 **completed solds** matching Scout rules. The stamp label is exactly **Last-5 avg (AUD)** (arithmetic mean of those AUD prices). If fewer than 5 solds match, `n` is shown honestly. Each sold row has a tappable **source link** (`sourceUrl`, optional `sourceLabel`) to the listing / PriceCharting / eBay sold page so you can check it. Fake prices are never labeled as live.
 
 ### Scout match
@@ -31,7 +34,15 @@ There is no live solds API wired in v0.1. A `CompsService` interface sits in fro
 - OCR via `expo-text-extractor` (Apple Vision / ML Kit) behind an `OcrService` interface
 - EAS Build profiles in `eas.json` (cloud iOS builds from Windows)
 
-OCR and the custom camera view need a **development build** or TestFlight binary. Expo Go can still open the three tabs, save cards, and show the comps UI; OCR will report that it is unsupported and leave fields manual.
+**OCR host split**
+
+| Host | After a card photo |
+| --- | --- |
+| Expo Go | Soft-fail. No `ExpoTextExtractor` crash. Fields stay manual. |
+| EAS development client / TestFlight / production | OCR runs and autofills extracted fields. Review before save. |
+| Web preview | Same soft-fail as a missing native module. Fields stay manual. |
+
+The custom camera view still needs a **development build** or TestFlight binary for the full in-app shutter. Expo Go can still open the three tabs, pick a library photo, save cards, and show the comps UI.
 
 ## Windows: run locally
 
@@ -120,7 +131,7 @@ src/services/comps/  CompsService, Scout match, Last-5 avg
 
 ## Honesty rules
 
-- OCR messages say “attempted” or “failed”. Prefill is never treated as confirmed.
+- OCR messages say “attempted”, “failed”, or “unavailable”. Prefill is never treated as confirmed, and a missing native module is never reported as a successful read.
 - The comps stub emits SAMPLE rows only, with `example.invalid` source URLs labeled “not live”. They are never presented as live solds.
 - **Last-5 avg (AUD)** is hidden as `Unavailable` when `n=0`. A sample average is labeled as sample, not live.
 - No ripped One Piece IP art is included.
