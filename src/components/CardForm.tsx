@@ -1,11 +1,13 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { CARD_LANGUAGES, CARD_TYPES, isSlab, type CardDraft, type CardType } from '@/src/models/card';
+import { CARD_TYPES, isSlab, type CardDraft, type CardType } from '@/src/models/card';
 import { chamber } from '@/src/theme/chamber';
 import { Field } from './Field';
 import { ChipRow } from './ChipRow';
 import { GoldButton } from './GoldButton';
 import { ChamberMark } from './ChamberMark';
 import { todayIsoDate } from '@/src/lib/dates';
+import { filterNumericGrade, gradeFieldHint } from '@/src/lib/grade';
+import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp } from '@/src/lib/language';
 
 interface Props {
   draft: CardDraft;
@@ -28,7 +30,7 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
         ) : (
           <View style={styles.placeholder}>
             <ChamberMark size={64} />
-            <Text style={styles.placeholderText}>Raw card or PSA / BGS / TAG slab</Text>
+            <Text style={styles.placeholderText}>Raw card or slab</Text>
           </View>
         )}
         <View style={styles.photoActions}>
@@ -53,49 +55,50 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
         label="Type"
         values={CARD_TYPES}
         selected={draft.type}
-        onSelect={(type: CardType) => set('type', type)}
+        onSelect={(type: CardType) => {
+          onChange({
+            ...draft,
+            type,
+            grade: type === 'Raw' ? '' : filterNumericGrade(draft.grade, type),
+          });
+        }}
       />
-      <Field
-        label={isSlab(draft.type) ? 'Grade' : 'Grade / condition'}
-        value={draft.grade}
-        placeholder={isSlab(draft.type) ? '10' : 'NM (optional)'}
-        onChangeText={(grade) => set('grade', grade)}
-      />
-      <Field
-        label="Cert #"
-        value={draft.certNumber}
-        placeholder={isSlab(draft.type) ? 'Slab certification number' : 'Optional'}
-        keyboardType="number-pad"
-        onChangeText={(certNumber) => set('certNumber', certNumber)}
-      />
+      {isSlab(draft.type) ? (
+        <Field
+          label="Grade"
+          value={draft.grade}
+          placeholder={draft.type === 'BGS' ? '9.5' : '10'}
+          keyboardType="decimal-pad"
+          onChangeText={(grade) => set('grade', filterNumericGrade(grade, draft.type))}
+          hint={gradeFieldHint(draft.type, { optional: true })}
+        />
+      ) : null}
+      {isSlab(draft.type) ? (
+        <Field
+          label="Cert #"
+          value={draft.certNumber}
+          placeholder="Cert number"
+          keyboardType="number-pad"
+          onChangeText={(certNumber) => set('certNumber', certNumber)}
+        />
+      ) : null}
       <Field
         label="Print note"
         value={draft.printNote}
-        placeholder="Alternate Art, Manga, Parallel…"
+        placeholder="Alt art, manga…"
         onChangeText={(printNote) => set('printNote', printNote)}
-        hint="Optional. Comps match print exactly, including blank."
       />
       <ChipRow
         label="Language"
-        values={CARD_LANGUAGES}
-        selected={(CARD_LANGUAGES as readonly string[]).includes(draft.language) ? (draft.language as (typeof CARD_LANGUAGES)[number]) : 'Other'}
-        onSelect={(language) => set('language', language === 'Other' ? draft.language === 'Other' ? 'Other' : 'Other' : language)}
+        values={COMP_LANGUAGES}
+        selected={compLanguageFromCode(draft.language)}
+        onSelect={(option) => set('language', languageCodeFromComp(option))}
       />
-      {draft.language === 'Other' || !(CARD_LANGUAGES as readonly string[]).includes(draft.language) ? (
-        <Field
-          label="Language code"
-          value={draft.language === 'Other' ? '' : draft.language}
-          placeholder="Custom language"
-          autoCapitalize="characters"
-          onChangeText={(language) => set('language', language || 'Other')}
-        />
-      ) : null}
       <Field
         label="Purchase date"
         value={draft.purchaseDate}
         placeholder="YYYY-MM-DD"
         onChangeText={(purchaseDate) => set('purchaseDate', purchaseDate)}
-        hint="Optional."
       />
       <GoldButton label="Use today’s date" tone="ghost" onPress={() => set('purchaseDate', todayIsoDate())} />
       <Field
@@ -108,7 +111,7 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
       <Field
         label="Notes"
         value={draft.notes}
-        placeholder="Source, condition notes…"
+        placeholder="Source, condition…"
         multiline
         style={styles.notes}
         onChangeText={(notes) => set('notes', notes)}

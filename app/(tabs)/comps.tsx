@@ -6,16 +6,17 @@ import { Field } from '@/src/components/Field';
 import { GoldButton } from '@/src/components/GoldButton';
 import { Last5AvgStamp } from '@/src/components/Last5AvgStamp';
 import { useChamber } from '@/src/context/ChamberContext';
-import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/card';
+import { CARD_TYPES, isSlab, type CardType, type CollectionCard } from '@/src/models/card';
 import type { CompQuery, CompsResult } from '@/src/models/comps';
-import { LAST5_AVG_LABEL } from '@/src/services/comps';
+import { filterNumericGrade, gradeFieldHint } from '@/src/lib/grade';
+import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp, type CompLanguage } from '@/src/lib/language';
 import { chamber } from '@/src/theme/chamber';
 
 export default function CompsScreen() {
   const { cards, lookupComps } = useChamber();
   const [cardCode, setCardCode] = useState('');
   const [printNote, setPrintNote] = useState('');
-  const [language, setLanguage] = useState('EN');
+  const [language, setLanguage] = useState<CompLanguage>('Global');
   const [type, setType] = useState<CardType>('Raw');
   const [grade, setGrade] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -26,9 +27,9 @@ export default function CompsScreen() {
     () => ({
       cardCode: cardCode.trim().toUpperCase(),
       printNote: printNote.trim() || null,
-      language: language.trim().toUpperCase() || 'EN',
+      language: languageCodeFromComp(language),
       type,
-      grade: grade.trim() || null,
+      grade: type === 'Raw' ? null : grade.trim() || null,
     }),
     [cardCode, printNote, language, type, grade],
   );
@@ -37,9 +38,9 @@ export default function CompsScreen() {
     setSelectedId(card.id);
     setCardCode(card.cardCode);
     setPrintNote(card.printNote ?? '');
-    setLanguage(card.language);
+    setLanguage(compLanguageFromCode(card.language));
     setType(card.type);
-    setGrade(card.grade ?? '');
+    setGrade(card.type === 'Raw' ? '' : filterNumericGrade(card.grade ?? '', card.type));
     setResult(null);
   };
 
@@ -54,18 +55,7 @@ export default function CompsScreen() {
   };
 
   return (
-    <ChamberScreen
-      title="Comps"
-      subtitle="Completed solds only. Match is code ∧ print ∧ language ∧ grade. Raw is never a slab.">
-      <View style={styles.rules}>
-        <Text style={styles.rulesTitle}>Scout match</Text>
-        <Text style={styles.rulesBody}>
-          Newest ≤5 per channel · AUD first · FX stamped on conversions · auctions kept
-          separate · {LAST5_AVG_LABEL} is an arithmetic mean · n is honest when under 5 ·
-          each sold has a tappable source link · fake prices are never labeled as live.
-        </Text>
-      </View>
-
+    <ChamberScreen title="Comps" subtitle="Last solds for this code / grade.">
       {cards.length > 0 ? (
         <View style={styles.picker}>
           <Text style={styles.pickerLabel}>From collection</Text>
@@ -84,21 +74,52 @@ export default function CompsScreen() {
           </View>
         </View>
       ) : (
-        <Text style={styles.hint}>Add a card to prefill a Scout query, or type one below.</Text>
+        <Text style={styles.hint}>Add a card or type a code below.</Text>
       )}
 
-      <Field label="Card code" value={cardCode} autoCapitalize="characters" onChangeText={setCardCode} />
-      <Field label="Print note" value={printNote} placeholder="Blank matches blank" onChangeText={setPrintNote} />
-      <Field label="Language" value={language} autoCapitalize="characters" onChangeText={setLanguage} />
-      <ChipRow label="Type" values={CARD_TYPES} selected={type} onSelect={setType} />
-      <Field label="Grade" value={grade} placeholder="Blank matches ungraded / raw blank" onChangeText={setGrade} />
-      <GoldButton label="Look up last completed solds" onPress={runLookup} loading={loading} disabled={!query.cardCode} />
+      <Field
+        label="Card code"
+        value={cardCode}
+        autoCapitalize="characters"
+        onChangeText={setCardCode}
+      />
+      <Field
+        label="Print note"
+        value={printNote}
+        placeholder="Blank matches blank"
+        onChangeText={setPrintNote}
+      />
+      <ChipRow
+        label="Language"
+        values={COMP_LANGUAGES}
+        selected={language}
+        onSelect={setLanguage}
+      />
+      <ChipRow
+        label="Type"
+        values={CARD_TYPES}
+        selected={type}
+        onSelect={(next) => {
+          setType(next);
+          setGrade(next === 'Raw' ? '' : filterNumericGrade(grade, next));
+          setResult(null);
+        }}
+      />
+      {isSlab(type) ? (
+        <Field
+          label="Grade"
+          value={grade}
+          placeholder={type === 'BGS' ? '9.5' : '10'}
+          keyboardType="decimal-pad"
+          onChangeText={(value) => setGrade(filterNumericGrade(value, type))}
+          hint={gradeFieldHint(type)}
+        />
+      ) : null}
+      <GoldButton label="Get comps" onPress={runLookup} loading={loading} disabled={!query.cardCode} />
 
       {result ? (
         <View style={styles.results}>
-          <View style={[styles.banner, result.sourceStatus !== 'live' && styles.bannerWarn]}>
-            <Text style={styles.bannerText}>{result.sourceMessage}</Text>
-          </View>
+          <Text style={styles.bannerText}>{result.sourceMessage}</Text>
           <Last5AvgStamp avg={result.fixed} sourceStatus={result.sourceStatus} />
           <Last5AvgStamp avg={result.auction} sourceStatus={result.sourceStatus} />
         </View>
@@ -108,24 +129,6 @@ export default function CompsScreen() {
 }
 
 const styles = StyleSheet.create({
-  rules: {
-    backgroundColor: chamber.panel,
-    borderColor: chamber.panelEdge,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    gap: 6,
-  },
-  rulesTitle: {
-    color: chamber.gold,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-  },
-  rulesBody: {
-    color: chamber.muted,
-    fontSize: 13,
-    lineHeight: 18,
-  },
   picker: {
     gap: 8,
   },
@@ -145,37 +148,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: chamber.panelEdge,
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   cardChipOn: {
     borderColor: chamber.gold,
   },
   cardChipText: {
     color: chamber.ink,
-    fontSize: 12,
+    fontSize: 13,
   },
   hint: {
     color: chamber.muted,
-    fontSize: 13,
+    fontSize: 14,
   },
   results: {
     gap: 12,
   },
-  banner: {
-    backgroundColor: '#1B2418',
-    borderColor: chamber.ok,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-  },
-  bannerWarn: {
-    backgroundColor: '#241C12',
-    borderColor: chamber.goldDim,
-  },
   bannerText: {
     color: chamber.goldSoft,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

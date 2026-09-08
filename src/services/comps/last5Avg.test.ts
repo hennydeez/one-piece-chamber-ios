@@ -104,8 +104,8 @@ describe('Last-5 avg', () => {
   });
 
   it('reports honest n when under 5', () => {
-    assert.equal(honestCountLabel(0), 'n=0 of 5 — no completed solds matched');
-    assert.match(honestCountLabel(2), /fewer than 5/);
+    assert.equal(honestCountLabel(0), 'n=0 of 5');
+    assert.equal(honestCountLabel(2), 'n=2 of 5');
     assert.equal(honestCountLabel(5), 'n=5 of 5');
   });
 });

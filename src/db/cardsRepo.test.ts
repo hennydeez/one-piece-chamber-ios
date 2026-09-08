@@ -8,6 +8,11 @@ describe('cardsRepo helpers', () => {
     assert.equal(validateDraft(emptyDraft()), 'Card code is required.');
   });
 
+  it('rejects a letter grade on a PSA slab', () => {
+    const draft = { ...emptyDraft(), cardCode: 'OP01-001', type: 'PSA' as const, grade: 'GEM' };
+    assert.equal(validateDraft(draft), 'PSA grades are whole numbers.');
+  });
+
   it('rejects a non-numeric price', () => {
     const draft = { ...emptyDraft(), cardCode: 'OP01-001', purchasePriceAud: 'abc' };
     assert.equal(validateDraft(draft), 'Purchase price must be a valid AUD amount.');

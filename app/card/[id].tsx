@@ -36,13 +36,13 @@ export default function CardDetailScreen() {
   if (!card) {
     return (
       <ChamberScreen title="Card">
-        <Text style={styles.muted}>This card is not in the chamber.</Text>
+        <Text style={styles.muted}>Card not found.</Text>
       </ChamberScreen>
     );
   }
 
   const confirmDelete = () => {
-    Alert.alert('Remove from chamber', `Delete ${card.cardCode}? This cannot be undone.`, [
+    Alert.alert('Delete', `Delete ${card.cardCode}?`, [
       { text: 'Keep', style: 'cancel' },
       {
         text: 'Delete',
@@ -91,7 +91,7 @@ export default function CardDetailScreen() {
         <Row label="Price paid" value={formatAud(card.purchasePriceAud)} />
         <Row label="Notes" value={card.notes ?? '—'} />
       </View>
-      <GoldButton label="Last-5 comps for this card" onPress={loadComps} loading={loadingComps} />
+      <GoldButton label="Get comps" onPress={loadComps} loading={loadingComps} />
       {comps ? (
         <View style={styles.comps}>
           <Text style={styles.banner}>{comps.sourceMessage}</Text>
@@ -99,7 +99,7 @@ export default function CardDetailScreen() {
           <Last5AvgStamp avg={comps.auction} sourceStatus={comps.sourceStatus} />
         </View>
       ) : null}
-      <GoldButton label="Delete card" tone="danger" onPress={confirmDelete} />
+      <GoldButton label="Delete" tone="danger" onPress={confirmDelete} />
     </ChamberScreen>
   );
 }

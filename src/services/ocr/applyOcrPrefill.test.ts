@@ -86,7 +86,7 @@ describe('Add Card ingest (recognize + apply)', () => {
     assert.equal(next.grade, '10');
     assert.equal(next.certNumber, '81234567');
     assert.equal(next.photoUri, 'file:///card.jpg');
-    assert.match(attempt.message, /OCR attempted/);
+    assert.match(attempt.message, /Check these fields/);
   });
 
   it('keeps empty manual fields after an Expo Go miss', async () => {

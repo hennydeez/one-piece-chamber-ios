@@ -12,8 +12,8 @@ export default function CollectionsScreen() {
 
   if (!ready) {
     return (
-      <ChamberScreen title="Collections" subtitle="Opening the chamber…">
-        <Text style={styles.muted}>Loading saved cards from SQLite.</Text>
+      <ChamberScreen title="Collections" subtitle="Loading…">
+        <Text style={styles.muted}>Loading…</Text>
       </ChamberScreen>
     );
   }
@@ -22,14 +22,10 @@ export default function CollectionsScreen() {
     return (
       <ChamberScreen
         title="Collections"
-        subtitle="Raw and graded slabs you actually own.">
+        subtitle="Cards you own.">
         <View style={styles.empty}>
           <ChamberMark size={88} />
-          <Text style={styles.emptyTitle}>The chamber is empty</Text>
-          <Text style={styles.muted}>
-            Photograph a raw card or a PSA / BGS / TAG slab to start a collection. No
-            licensed One Piece art is bundled with this app.
-          </Text>
+          <Text style={styles.emptyTitle}>No cards yet. Add one.</Text>
           <GoldButton label="Add a card" onPress={() => router.push('/(tabs)/add')} />
         </View>
       </ChamberScreen>
@@ -37,7 +33,7 @@ export default function CollectionsScreen() {
   }
 
   return (
-    <ChamberScreen title="Collections" subtitle={`${cards.length} card${cards.length === 1 ? '' : 's'} in the chamber`} scroll={false}>
+    <ChamberScreen title="Collections" subtitle={`${cards.length} card${cards.length === 1 ? '' : 's'}`} scroll={false}>
       <FlatList
         data={cards}
         keyExtractor={(item) => item.id}

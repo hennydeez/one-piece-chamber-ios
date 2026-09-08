@@ -15,7 +15,7 @@ export default function CaptureScreen() {
   if (!permission) {
     return (
       <View style={styles.center}>
-        <Text style={styles.text}>Checking camera permission…</Text>
+        <Text style={styles.text}>Loading…</Text>
       </View>
     );
   }
@@ -23,9 +23,7 @@ export default function CaptureScreen() {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.text}>
-          Camera access is used to photograph raw cards and PSA / BGS / TAG slabs.
-        </Text>
+        <Text style={styles.text}>Need the camera for a photo.</Text>
         <GoldButton label="Allow camera" onPress={() => void requestPermission()} />
         <GoldButton label="Close" tone="ghost" onPress={() => router.back()} />
       </View>
@@ -49,7 +47,7 @@ export default function CaptureScreen() {
     <View style={styles.root}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
       <View style={styles.dock}>
-        <Text style={styles.hint}>Frame the card code, grade, and cert if the slab shows them.</Text>
+        <Text style={styles.hint}>Get the code and grade in frame.</Text>
         <GoldButton label={busy ? 'Capturing…' : 'Capture'} onPress={take} loading={busy} />
         <GoldButton label="Cancel" tone="ghost" onPress={() => router.back()} />
       </View>

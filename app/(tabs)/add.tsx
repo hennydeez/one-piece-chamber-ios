@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { Alert } from 'react-native';
 import { CardForm } from '@/src/components/CardForm';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { GoldButton } from '@/src/components/GoldButton';
@@ -9,7 +9,6 @@ import { useChamber } from '@/src/context/ChamberContext';
 import { emptyDraft, type CardDraft } from '@/src/models/card';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
-import { chamber } from '@/src/theme/chamber';
 
 export default function AddCardScreen() {
   const { saveDraft, pendingPhotoUri, setPendingPhotoUri } = useChamber();
@@ -19,7 +18,7 @@ export default function AddCardScreen() {
 
   const ingestPhoto = useCallback(async (uri: string) => {
     setDraft((current) => ({ ...current, photoUri: uri }));
-    setOcrMessage('Attempting OCR…');
+    setOcrMessage('Reading…');
     try {
       const attempt = await expoOcrService.recognize(uri);
       setOcrMessage(attempt.message);
@@ -41,7 +40,7 @@ export default function AddCardScreen() {
   const pickLibrary = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Library access', 'Photo library permission is needed to attach a card image.');
+      Alert.alert('Photos', 'Need library access to attach a picture.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -59,7 +58,11 @@ export default function AddCardScreen() {
       const card = await saveDraft(draft);
       setDraft(emptyDraft());
       setOcrMessage(null);
-      router.push(`/card/${card.id}`);
+      try {
+        router.push(`/card/${card.id}`);
+      } catch {
+        router.replace('/(tabs)');
+      }
     } catch (error) {
       Alert.alert('Could not save', error instanceof Error ? error.message : 'Unknown error');
     } finally {
@@ -68,14 +71,7 @@ export default function AddCardScreen() {
   };
 
   return (
-    <ChamberScreen
-      title="Add Card"
-      subtitle="Camera or library for raw cards and slabs. OCR is best-effort and fully editable."
-      footer={
-        <Text style={styles.footerNote}>
-          Photos stay on-device. OCR never overwrites a field you already typed unless that field was empty.
-        </Text>
-      }>
+    <ChamberScreen title="Add Card" subtitle="Snap or pick a photo. Fix the fields if OCR misses.">
       <CardForm
         draft={draft}
         onChange={setDraft}
@@ -83,17 +79,7 @@ export default function AddCardScreen() {
         onCamera={() => router.push('/capture')}
         onLibrary={pickLibrary}
       />
-      <GoldButton label="Save to chamber" onPress={save} loading={saving} />
+      <GoldButton label="Save" onPress={save} loading={saving} />
     </ChamberScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  footerNote: {
-    color: chamber.faint,
-    fontSize: 12,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    lineHeight: 16,
-  },
-});

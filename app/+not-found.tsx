@@ -5,11 +5,11 @@ import { chamber } from '@/src/theme/chamber';
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Lost in the chamber' }} />
+      <Stack.Screen options={{ title: 'Not found' }} />
       <View style={styles.container}>
-        <Text style={styles.title}>This passage does not exist.</Text>
+        <Text style={styles.title}>Page not found.</Text>
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Return to Collections</Text>
+          <Text style={styles.linkText}>Collections</Text>
         </Link>
       </View>
     </>

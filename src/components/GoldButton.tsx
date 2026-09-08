@@ -30,7 +30,7 @@ export function GoldButton({ label, onPress, disabled, loading, tone = 'gold' }:
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
+    minHeight: 52,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
