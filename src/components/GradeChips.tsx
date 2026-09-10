@@ -14,6 +14,7 @@ export function GradeChips({ type, value, onChange, optional }: Props) {
   if (!isSlab(type)) return null;
   return (
     <ChipRow
+      key={type}
       label="Grade"
       values={gradeChipOptions(type)}
       selected={value}
