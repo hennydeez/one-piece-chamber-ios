@@ -1,19 +1,22 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ChamberMark } from '@/src/components/ChamberMark';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { ChipRow } from '@/src/components/ChipRow';
 import { Field } from '@/src/components/Field';
 import { GoldButton } from '@/src/components/GoldButton';
+import { GradeChips } from '@/src/components/GradeChips';
 import { Last5AvgStamp } from '@/src/components/Last5AvgStamp';
 import { useChamber } from '@/src/context/ChamberContext';
-import { CARD_TYPES, isSlab, type CardType, type CollectionCard } from '@/src/models/card';
+import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/card';
 import type { CompQuery, CompsResult } from '@/src/models/comps';
-import { filterNumericGrade, gradeFieldHint } from '@/src/lib/grade';
+import { snapGradeToChips } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp, type CompLanguage } from '@/src/lib/language';
+import { resolveQueryPhotoUri } from '@/src/services/comps/queryPhoto';
 import { chamber } from '@/src/theme/chamber';
 
 export default function CompsScreen() {
-  const { cards, lookupComps } = useChamber();
+  const { cards, lookupComps, pendingPhotoUri } = useChamber();
   const [cardCode, setCardCode] = useState('');
   const [printNote, setPrintNote] = useState('');
   const [language, setLanguage] = useState<CompLanguage>('Global');
@@ -21,6 +24,7 @@ export default function CompsScreen() {
   const [grade, setGrade] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [result, setResult] = useState<CompsResult | null>(null);
+  const [searchedPhotoUri, setSearchedPhotoUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const query = useMemo<CompQuery>(
@@ -40,14 +44,22 @@ export default function CompsScreen() {
     setPrintNote(card.printNote ?? '');
     setLanguage(compLanguageFromCode(card.language));
     setType(card.type);
-    setGrade(card.type === 'Raw' ? '' : filterNumericGrade(card.grade ?? '', card.type));
+    setGrade(card.type === 'Raw' ? '' : (card.grade ?? ''));
     setResult(null);
+    setSearchedPhotoUri(null);
   };
 
   const runLookup = async () => {
     if (!query.cardCode) return;
     setLoading(true);
     try {
+      setSearchedPhotoUri(
+        resolveQueryPhotoUri(query, {
+          selectedCard: cards.find((card) => card.id === selectedId) ?? null,
+          cards,
+          draftPhotoUri: pendingPhotoUri,
+        }),
+      );
       setResult(await lookupComps(query));
     } finally {
       setLoading(false);
@@ -101,24 +113,23 @@ export default function CompsScreen() {
         selected={type}
         onSelect={(next) => {
           setType(next);
-          setGrade(next === 'Raw' ? '' : filterNumericGrade(grade, next));
+          setGrade(snapGradeToChips(grade, next));
           setResult(null);
+          setSearchedPhotoUri(null);
         }}
       />
-      {isSlab(type) ? (
-        <Field
-          label="Grade"
-          value={grade}
-          placeholder={type === 'BGS' ? '9.5' : '10'}
-          keyboardType="decimal-pad"
-          onChangeText={(value) => setGrade(filterNumericGrade(value, type))}
-          hint={gradeFieldHint(type)}
-        />
-      ) : null}
+      <GradeChips type={type} value={grade} onChange={setGrade} />
       <GoldButton label="Get comps" onPress={runLookup} loading={loading} disabled={!query.cardCode} />
 
       {result ? (
         <View style={styles.results}>
+          <View style={styles.photo}>
+            {searchedPhotoUri ? (
+              <Image source={{ uri: searchedPhotoUri }} style={styles.photoImage} />
+            ) : (
+              <ChamberMark size={72} />
+            )}
+          </View>
           <Text style={styles.bannerText}>{result.sourceMessage}</Text>
           <Last5AvgStamp avg={result.fixed} sourceStatus={result.sourceStatus} />
           <Last5AvgStamp avg={result.auction} sourceStatus={result.sourceStatus} />
@@ -166,6 +177,20 @@ const styles = StyleSheet.create({
   },
   results: {
     gap: 12,
+  },
+  photo: {
+    height: 220,
+    borderRadius: 12,
+    backgroundColor: chamber.bgSunken,
+    borderWidth: 1,
+    borderColor: chamber.panelEdge,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
   },
   bannerText: {
     color: chamber.goldSoft,

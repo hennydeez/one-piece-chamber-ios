@@ -4,11 +4,12 @@ import { chamber } from '@/src/theme/chamber';
 interface Props<T extends string> {
   label: string;
   values: readonly T[];
-  selected: T;
+  selected: T | '';
   onSelect: (value: T) => void;
+  hint?: string;
 }
 
-export function ChipRow<T extends string>({ label, values, selected, onSelect }: Props<T>) {
+export function ChipRow<T extends string>({ label, values, selected, onSelect, hint }: Props<T>) {
   return (
     <View style={styles.wrap}>
       <Text style={styles.label}>{label}</Text>
@@ -26,6 +27,7 @@ export function ChipRow<T extends string>({ label, values, selected, onSelect }:
           );
         })}
       </View>
+      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
     </View>
   );
 }
@@ -66,5 +68,9 @@ const styles = StyleSheet.create({
   },
   chipTextOn: {
     color: chamber.goldSoft,
+  },
+  hint: {
+    color: chamber.faint,
+    fontSize: 12,
   },
 });

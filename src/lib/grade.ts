@@ -1,5 +1,24 @@
 import { isSlab, type CardType } from '../models/card';
 
+export const PSA_GRADE_CHIPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] as const;
+export const TAG_GRADE_CHIPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] as const;
+export const BGS_GRADE_CHIPS = ['7', '7.5', '8', '8.5', '9', '9.5', '10'] as const;
+
+/** Chip values for Add Card / Comps. Raw has none (grade stays hidden). */
+export function gradeChipOptions(type: CardType): readonly string[] {
+  if (type === 'PSA') return PSA_GRADE_CHIPS;
+  if (type === 'TAG') return TAG_GRADE_CHIPS;
+  if (type === 'BGS') return BGS_GRADE_CHIPS;
+  return [];
+}
+
+/** Keep a typed grade only when it is one of that grader's chips. */
+export function snapGradeToChips(value: string, type: CardType): string {
+  if (!isSlab(type)) return '';
+  const filtered = filterNumericGrade(value, type);
+  return gradeChipOptions(type).includes(filtered) ? filtered : '';
+}
+
 /** Strip letters and extra punctuation. Keeps digits and a single decimal. */
 export function filterNumericGrade(value: string, type: CardType): string {
   const cleaned = value.replace(/[^\d.]/g, '');
@@ -28,14 +47,6 @@ export function validateGrade(value: string, type: CardType): string | null {
   return null;
 }
 
-export function gradeFieldHint(type: CardType, opts?: { optional?: boolean }): string {
-  const base =
-    type === 'PSA'
-      ? 'Numbers only. Whole numbers.'
-      : type === 'BGS'
-        ? 'Numbers only. Decimals ok.'
-        : type === 'TAG'
-          ? 'Numbers only. Integer or one decimal.'
-          : 'Numbers only';
-  return opts?.optional ? `${base} Optional.` : base;
+export function gradeFieldHint(_type?: CardType, opts?: { optional?: boolean }): string {
+  return opts?.optional ? 'Numbers only. Optional.' : 'Numbers only.';
 }

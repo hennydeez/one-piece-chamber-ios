@@ -14,7 +14,8 @@
         "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "development"
+        "APP_ENV": "development",
+        "EXPO_PUBLIC_COMPS_API_URL": "https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php"
       }
     },
     "preview": {
@@ -22,6 +23,9 @@
       "channel": "preview",
       "ios": {
         "resourceClass": "m-medium"
+      },
+      "env": {
+        "EXPO_PUBLIC_COMPS_API_URL": "https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php"
       }
     },
     "production": {
@@ -29,6 +33,9 @@
       "channel": "production",
       "ios": {
         "resourceClass": "m-medium"
+      },
+      "env": {
+        "EXPO_PUBLIC_COMPS_API_URL": "https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php"
       }
     }
   },

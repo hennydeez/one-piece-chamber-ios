@@ -11,7 +11,13 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.3.0` |
+| App version | `0.4.0` |
+
+## What v0.4 does
+
+- **Grade chips** — Add Card (and Comps) pick a grade from chips. PSA and TAG: 1–10 integers. BGS: 7, 7.5, 8, 8.5, 9, 9.5, 10. Raw still hides grade. Hint stays `Numbers only.` Existing numeric helpers still validate on save.
+- **Comps photo** — after **Get comps**, the searched card image shows (collection match or draft photo). It shows even when solds are empty / unconfigured. Nothing is invented.
+- **Live comps URL** — EAS builds set `EXPO_PUBLIC_COMPS_API_URL` to Chamber `comps.php`: `https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php`. Local: copy `.env.example`. Leave it unset for empty comps (`UnconfiguredCompsService`). `HttpCompsService` is unchanged.
 
 ## What v0.3 does
 
@@ -21,13 +27,17 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 - **OCR in Expo Go** — still a soft-fail: `OCR needs a full app build. Type it in.` No claim that OCR works in Expo Go.
 - **Comps** — sample / `example.invalid` rows are gone. With no `EXPO_PUBLIC_COMPS_API_URL`, Get comps shows empty / unavailable. When the URL is set, `HttpCompsService` fetches last ≤5 completed solds, stamps **Last-5 avg (AUD)**, and keeps tappable `sourceUrl`s. Nothing is invented on error or n=0.
 - **Language** — Global (EN / worldwide) and Jap (JP) buttons only. Those never mix.
-- **Grade** — numbers only. Hidden on Raw. PSA = whole numbers. BGS = decimals ok. TAG = integer or one decimal (pending a firmer rule).
+- **Grade** — numbers only. Hidden on Raw. PSA = whole numbers. BGS = decimals ok. TAG = integer or one decimal (pending a firmer rule). v0.4 picks these from chips.
 
 ### Scout match (code, not UI)
 
 Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, AUD first, FX stamped on conversions, auctions separate from fixed/BIN.
 
-**Live solds blocker:** PriceCharting and eBay completed-sold APIs need tokens / a backend. This app has no keyless public solds feed. Point `EXPO_PUBLIC_COMPS_API_URL` at a backend that returns completed solds (prefer PriceCharting eBay solds, then eBay sold). Payload shape is in `.env.example`.
+**Live solds:** Point `EXPO_PUBLIC_COMPS_API_URL` at Chamber `comps.php` (default in `.env.example` and `eas.json`):
+
+`https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php`
+
+Payload shape is in `.env.example`. Unset → empty comps, no fake prices. This app does not scrape eBay.
 
 ## What v0.2 did
 
@@ -86,7 +96,7 @@ npm run typecheck
 npx expo start
 ```
 
-Copy `.env.example` to `.env` and set `EXPO_PUBLIC_COMPS_API_URL` if you have a completed-solds backend. Leave it unset for empty comps (no fake prices).
+Copy `.env.example` to `.env` to use Chamber `comps.php`. Leave `EXPO_PUBLIC_COMPS_API_URL` unset for empty comps (no fake prices). EAS profiles already set the public URL.
 
 ## EAS iOS build + TestFlight (from Windows)
 
@@ -145,7 +155,7 @@ src/services/comps/  CompsService, Scout match, Last-5 avg
 ## Honesty rules
 
 - OCR messages say it missed, needs a full build, or to check the fields. Prefill is never treated as confirmed.
-- Comps stay empty until `EXPO_PUBLIC_COMPS_API_URL` is set. No sample prices.
+- Comps stay empty until `EXPO_PUBLIC_COMPS_API_URL` is set (EAS builds ship the Chamber `comps.php` URL). No sample prices.
 - **Last-5 avg (AUD)** is `Unavailable` when `n=0`.
 - No ripped One Piece IP art is included.
 

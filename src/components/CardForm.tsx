@@ -6,8 +6,9 @@ import { ChipRow } from './ChipRow';
 import { GoldButton } from './GoldButton';
 import { ChamberMark } from './ChamberMark';
 import { todayIsoDate } from '@/src/lib/dates';
-import { filterNumericGrade, gradeFieldHint } from '@/src/lib/grade';
+import { snapGradeToChips } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp } from '@/src/lib/language';
+import { GradeChips } from './GradeChips';
 
 interface Props {
   draft: CardDraft;
@@ -59,20 +60,16 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
           onChange({
             ...draft,
             type,
-            grade: type === 'Raw' ? '' : filterNumericGrade(draft.grade, type),
+            grade: snapGradeToChips(draft.grade, type),
           });
         }}
       />
-      {isSlab(draft.type) ? (
-        <Field
-          label="Grade"
-          value={draft.grade}
-          placeholder={draft.type === 'BGS' ? '9.5' : '10'}
-          keyboardType="decimal-pad"
-          onChangeText={(grade) => set('grade', filterNumericGrade(grade, draft.type))}
-          hint={gradeFieldHint(draft.type, { optional: true })}
-        />
-      ) : null}
+      <GradeChips
+        type={draft.type}
+        value={draft.grade}
+        optional
+        onChange={(grade) => set('grade', grade)}
+      />
       {isSlab(draft.type) ? (
         <Field
           label="Cert #"
