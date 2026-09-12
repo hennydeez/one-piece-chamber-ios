@@ -9,8 +9,6 @@ export function resolveSourceUrl(sold: Pick<CompSold, 'sourceUrl' | 'listingUrl'
 
 export function resolveSourceLabel(sold: Pick<CompSold, 'sourceLabel' | 'sourceUrl' | 'listingUrl'>): string {
   if (sold.sourceLabel?.trim()) return sold.sourceLabel.trim();
-  const url = resolveSourceUrl(sold);
-  if (url && isSampleSourceUrl(url)) return 'Sample listing — not live';
   return 'Open sold listing';
 }
 
@@ -22,6 +20,14 @@ export function isSampleSourceUrl(url: string): boolean {
   }
 }
 
-export function sampleSourceUrl(kind: 'ebay-sold' | 'pricecharting', slug: string): string {
-  return `https://${SAMPLE_SOURCE_HOST}/sample/${kind}/${encodeURIComponent(slug)}`;
+/** Leftover stub / SAMPLE / example.invalid rows must never render as comps. */
+export function isSampleSold(
+  sold: Pick<CompSold, 'source' | 'sourceUrl' | 'listingUrl' | 'id' | 'title'>,
+): boolean {
+  const source = sold.source.trim().toLowerCase();
+  if (source === 'sample' || source === 'stub') return true;
+  const id = sold.id.trim().toLowerCase();
+  if (id.startsWith('sample-') || id.startsWith('stub-')) return true;
+  const url = resolveSourceUrl(sold);
+  return url != null && isSampleSourceUrl(url);
 }

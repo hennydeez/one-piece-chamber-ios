@@ -24,7 +24,7 @@ function sold(partial: Partial<CompSold> & Pick<CompSold, 'id' | 'soldAt' | 'pri
     fxRateToAud: partial.fxRateToAud ?? null,
     fxStampedAt: partial.fxStampedAt ?? null,
     source: 'fixture',
-    sourceUrl: 'https://example.invalid/sample/fixture',
+    sourceUrl: 'https://www.ebay.com/itm/fixture',
     ...partial,
   };
 }
@@ -101,6 +101,29 @@ describe('Last-5 avg', () => {
       }),
     ]);
     assert.equal(chosen.length, 0);
+  });
+
+  it('drops leftover sample / example.invalid solds from the last 5', () => {
+    const chosen = selectLast5([
+      sold({
+        id: 'live',
+        soldAt: '2026-01-05',
+        priceAud: 100,
+        channel: 'fixed',
+        sourceUrl: 'https://www.ebay.com/itm/live',
+      }),
+      sold({
+        id: 'sample-row',
+        soldAt: '2026-01-06',
+        priceAud: 999,
+        channel: 'fixed',
+        sourceUrl: 'https://example.invalid/sample/fixture',
+      }),
+    ]);
+    assert.deepEqual(
+      chosen.map((s) => s.id),
+      ['live'],
+    );
   });
 
   it('reports honest n when under 5', () => {
