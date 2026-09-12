@@ -1,6 +1,7 @@
 import type { CompQuery, CompSold, CompsResult, CompsSourceStatus, Last5Avg, SaleChannel } from '../../models/comps';
 import { mean } from '../../lib/money';
 import { filterMatchingSolds } from './scoutMatch';
+import { isSampleSold } from './sourceLink';
 
 export const LAST5_AVG_LABEL = 'Last-5 avg (AUD)' as const;
 export const LAST5_MAX = 5;
@@ -18,8 +19,9 @@ function isAud(sold: CompSold): boolean {
  * Non-AUD rows may fill remaining slots only if they already carry a stamped FX conversion.
  */
 export function selectLast5(solds: CompSold[]): CompSold[] {
-  const aud = solds.filter(isAud).sort(byNewest);
-  const converted = solds
+  const live = solds.filter((sold) => !isSampleSold(sold));
+  const aud = live.filter(isAud).sort(byNewest);
+  const converted = live
     .filter((s) => !isAud(s) && s.fxRateToAud != null && s.fxStampedAt && Number.isFinite(s.priceAud))
     .sort(byNewest);
   return [...aud, ...converted].slice(0, LAST5_MAX);

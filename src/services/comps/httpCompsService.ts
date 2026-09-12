@@ -1,5 +1,6 @@
 import type { CompQuery, CompSold, CompsService, CompsResult } from '../../models/comps';
 import { buildCompsResult, emptyCompsResult } from './last5Avg';
+import { isSampleSold } from './sourceLink';
 
 function asCompletedSold(value: unknown): CompSold | null {
   if (!value || typeof value !== 'object') return null;
@@ -19,7 +20,8 @@ function asCompletedSold(value: unknown): CompSold | null {
       : typeof row.listingUrl === 'string' && row.listingUrl.trim()
         ? row.listingUrl.trim()
         : '';
-  return {
+  const title = typeof row.title === 'string' && row.title.trim() ? row.title.trim() : undefined;
+  const sold: CompSold = {
     id: row.id,
     cardCode: row.cardCode,
     printNote: typeof row.printNote === 'string' ? row.printNote : null,
@@ -37,8 +39,11 @@ function asCompletedSold(value: unknown): CompSold | null {
     source: typeof row.source === 'string' ? row.source : 'live',
     sourceUrl,
     sourceLabel: typeof row.sourceLabel === 'string' ? row.sourceLabel : undefined,
+    title,
     listingUrl: typeof row.listingUrl === 'string' ? row.listingUrl : undefined,
   };
+  if (isSampleSold(sold)) return null;
+  return sold;
 }
 
 export { asCompletedSold };
@@ -48,7 +53,7 @@ export { asCompletedSold };
  * Rejects incomplete rows. Never fabricates prices on error.
  */
 export class HttpCompsService implements CompsService {
-  constructor(private readonly endpoint: string) {}
+  constructor(readonly endpoint: string) {}
 
   async getLastCompletedSolds(query: CompQuery): Promise<CompsResult> {
     try {
@@ -86,7 +91,8 @@ export class HttpCompsService implements CompsService {
 
       const solds = rows
         .map(asCompletedSold)
-        .filter((row): row is CompSold => row != null);
+        .filter((row): row is CompSold => row != null)
+        .filter((row) => !isSampleSold(row));
 
       return buildCompsResult(
         query,

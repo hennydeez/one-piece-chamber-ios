@@ -11,13 +11,19 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.4.0` |
+| App version | `0.4.1` |
+
+## What v0.4.1 does
+
+- **Expo Go comps** — `npx expo start` / Expo Go do not load `eas.json` env. The public Chamber `comps.php` URL is now baked in, so `createCompsService()` always uses `HttpCompsService` when `EXPO_PUBLIC_COMPS_API_URL` is blank. `.env` is optional. After you pull, restart Metro with cache clear: `npx expo start -c`.
+- **No leftover samples** — stub / `example.invalid` / SAMPLE solds are dropped. They never render on Last-5 rows. Nothing is invented.
+- **Listing title** — when the API sends optional `title` on a sold, Last-5 rows show it so live listings do not look blank/fake.
 
 ## What v0.4 does
 
 - **Grade chips** — Add Card (and Comps) pick a grade from chips. PSA and TAG: 1–10 integers. BGS: 7, 7.5, 8, 8.5, 9, 9.5, 10. Raw still hides grade. Hint stays `Numbers only.` Existing numeric helpers still validate on save.
 - **Comps photo** — after **Get comps**, the searched card image shows (collection match or draft photo). It shows even when solds are empty / unconfigured. Nothing is invented.
-- **Live comps URL** — EAS builds set `EXPO_PUBLIC_COMPS_API_URL` to Chamber `comps.php`: `https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php`. Local: copy `.env.example`. Leave it unset for empty comps (`UnconfiguredCompsService`). `HttpCompsService` is unchanged.
+- **Live comps URL** — public Chamber `comps.php` is the default: `https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php`. EAS still sets `EXPO_PUBLIC_COMPS_API_URL`. Expo Go does not need `.env` (v0.4.1).
 
 ## What v0.3 does
 
@@ -33,11 +39,11 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 
 Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, AUD first, FX stamped on conversions, auctions separate from fixed/BIN.
 
-**Live solds:** Point `EXPO_PUBLIC_COMPS_API_URL` at Chamber `comps.php` (default in `.env.example` and `eas.json`):
+**Live solds:** Chamber `comps.php` is the baked-in default (also in `.env.example` and `eas.json`):
 
 `https://whitesmoke-woodpecker-609130.hostingersite.com/api/comps.php`
 
-Payload shape is in `.env.example`. Unset → empty comps, no fake prices. This app does not scrape eBay.
+Payload shape is in `.env.example`. Public URL only — no secrets. This app does not scrape eBay. After a pull, Expo Go needs `npx expo start -c` so the new default is picked up.
 
 ## What v0.2 did
 
@@ -96,7 +102,7 @@ npm run typecheck
 npx expo start
 ```
 
-Copy `.env.example` to `.env` to use Chamber `comps.php`. Leave `EXPO_PUBLIC_COMPS_API_URL` unset for empty comps (no fake prices). EAS profiles already set the public URL.
+`.env` is optional. The public Chamber `comps.php` URL is baked into the app. Copy `.env.example` only if you want to override it. After you pull, restart Expo Go with `npx expo start -c` so Metro picks up the default. EAS profiles still set the same public URL.
 
 ## EAS iOS build + TestFlight (from Windows)
 
@@ -155,7 +161,7 @@ src/services/comps/  CompsService, Scout match, Last-5 avg
 ## Honesty rules
 
 - OCR messages say it missed, needs a full build, or to check the fields. Prefill is never treated as confirmed.
-- Comps stay empty until `EXPO_PUBLIC_COMPS_API_URL` is set (EAS builds ship the Chamber `comps.php` URL). No sample prices.
+- Comps use the baked-in Chamber `comps.php` URL unless you override `EXPO_PUBLIC_COMPS_API_URL`. No sample prices. No leftover stub / `example.invalid` rows.
 - **Last-5 avg (AUD)** is `Unavailable` when `n=0`.
 - No ripped One Piece IP art is included.
 

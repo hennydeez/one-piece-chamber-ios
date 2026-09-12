@@ -30,6 +30,8 @@ export interface CompSold {
   sourceUrl: string;
   /** Button / link caption. Defaults to a generic “Open sold listing”. */
   sourceLabel?: string;
+  /** Listing title from the live API. Optional — never invented client-side. */
+  title?: string;
   /** @deprecated Prefer sourceUrl. Accepted from live payloads as a fallback. */
   listingUrl?: string;
 }
