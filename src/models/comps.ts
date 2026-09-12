@@ -44,13 +44,16 @@ export interface Last5Avg {
   maxN: 5;
   honestCountLabel: string;
   solds: CompSold[];
-  channel: SaleChannel;
+  /** Set on per-channel stamps. Omitted on the merged last-5 table. */
+  channel?: SaleChannel;
 }
 
 export type CompsSourceStatus = 'live' | 'unconfigured' | 'error' | 'sample';
 
 export interface CompsResult {
   query: CompQuery;
+  /** Newest completed solds across BIN + auction, max 5, plus their arithmetic avg. */
+  last5: Last5Avg;
   fixed: Last5Avg;
   auction: Last5Avg;
   sourceStatus: CompsSourceStatus;

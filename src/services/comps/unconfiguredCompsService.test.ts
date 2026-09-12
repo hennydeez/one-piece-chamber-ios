@@ -14,6 +14,10 @@ describe('UnconfiguredCompsService', () => {
     });
     assert.equal(result.sourceStatus, 'unconfigured');
     assert.equal(result.sourceMessage, UNCONFIGURED_COMPS_MESSAGE);
+    assert.equal(result.last5.label, 'Last-5 avg (AUD)');
+    assert.equal(result.last5.n, 0);
+    assert.equal(result.last5.solds.length, 0);
+    assert.equal(result.last5.averageAud, null);
     assert.equal(result.fixed.label, 'Last-5 avg (AUD)');
     assert.equal(result.fixed.n, 0);
     assert.equal(result.auction.n, 0);

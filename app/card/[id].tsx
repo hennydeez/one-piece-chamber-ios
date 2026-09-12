@@ -4,7 +4,7 @@ import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import { ChamberMark } from '@/src/components/ChamberMark';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { GoldButton } from '@/src/components/GoldButton';
-import { Last5AvgStamp } from '@/src/components/Last5AvgStamp';
+import { Last5SoldTable } from '@/src/components/Last5SoldTable';
 import { useChamber } from '@/src/context/ChamberContext';
 import { formatDisplayDate } from '@/src/lib/dates';
 import { formatAud } from '@/src/lib/money';
@@ -95,8 +95,7 @@ export default function CardDetailScreen() {
       {comps ? (
         <View style={styles.comps}>
           <Text style={styles.banner}>{comps.sourceMessage}</Text>
-          <Last5AvgStamp avg={comps.fixed} sourceStatus={comps.sourceStatus} />
-          <Last5AvgStamp avg={comps.auction} sourceStatus={comps.sourceStatus} />
+          <Last5SoldTable avg={comps.last5} />
         </View>
       ) : null}
       <GoldButton label="Delete" tone="danger" onPress={confirmDelete} />
