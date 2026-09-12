@@ -14,6 +14,14 @@ function isAud(sold: CompSold): boolean {
   return sold.currencyOriginal.toUpperCase() === 'AUD';
 }
 
+function isFxStamped(sold: CompSold): boolean {
+  return !isAud(sold) && sold.fxRateToAud != null && Boolean(sold.fxStampedAt) && Number.isFinite(sold.priceAud);
+}
+
+function liveEligible(solds: CompSold[]): CompSold[] {
+  return solds.filter((sold) => !isSampleSold(sold) && (isAud(sold) || isFxStamped(sold)));
+}
+
 /**
  * Newest completed solds, AUD-first, max 5.
  * Non-AUD rows may fill remaining slots only if they already carry a stamped FX conversion.
@@ -21,18 +29,23 @@ function isAud(sold: CompSold): boolean {
 export function selectLast5(solds: CompSold[]): CompSold[] {
   const live = solds.filter((sold) => !isSampleSold(sold));
   const aud = live.filter(isAud).sort(byNewest);
-  const converted = live
-    .filter((s) => !isAud(s) && s.fxRateToAud != null && s.fxStampedAt && Number.isFinite(s.priceAud))
-    .sort(byNewest);
+  const converted = live.filter(isFxStamped).sort(byNewest);
   return [...aud, ...converted].slice(0, LAST5_MAX);
+}
+
+/**
+ * Merge BIN + auction solds, newest first, max 5.
+ * Same eligibility as selectLast5: live AUD, or a stamped FX conversion. Does not invent prices.
+ */
+export function selectMergedLast5(solds: CompSold[]): CompSold[] {
+  return liveEligible(solds).sort(byNewest).slice(0, LAST5_MAX);
 }
 
 export function honestCountLabel(n: number, maxN = LAST5_MAX): string {
   return `n=${n} of ${maxN}`;
 }
 
-export function stampLast5Avg(solds: CompSold[], channel: SaleChannel): Last5Avg {
-  const chosen = selectLast5(solds.filter((s) => s.channel === channel));
+function stampFromChosen(chosen: CompSold[], channel?: SaleChannel): Last5Avg {
   const prices = chosen.map((s) => s.priceAud).filter((n) => Number.isFinite(n));
   return {
     label: LAST5_AVG_LABEL,
@@ -45,6 +58,18 @@ export function stampLast5Avg(solds: CompSold[], channel: SaleChannel): Last5Avg
   };
 }
 
+export function stampLast5Avg(solds: CompSold[], channel: SaleChannel): Last5Avg {
+  return stampFromChosen(
+    selectLast5(solds.filter((s) => s.channel === channel)),
+    channel,
+  );
+}
+
+/** Arithmetic mean of the merged last-5 rows actually shown. */
+export function stampMergedLast5Avg(solds: CompSold[]): Last5Avg {
+  return stampFromChosen(selectMergedLast5(solds));
+}
+
 export function buildCompsResult(
   query: CompQuery,
   solds: CompSold[],
@@ -55,6 +80,7 @@ export function buildCompsResult(
   const matched = filterMatchingSolds(solds, query);
   return {
     query,
+    last5: stampMergedLast5Avg(matched),
     fixed: stampLast5Avg(matched, 'fixed'),
     auction: stampLast5Avg(matched, 'auction'),
     sourceStatus,

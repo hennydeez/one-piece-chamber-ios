@@ -11,7 +11,11 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.4.1` |
+| App version | `0.4.2` |
+
+## What v0.4.2 does
+
+- **Last-5 table** — after Get comps, one table of the newest 5 completed solds (Date, AUD, BIN/Auc, eBay). Optional API `title` sits under the date. Then one **Last-5 avg (AUD)** of those rows. BIN and auction are merged. `n=0` is an empty table + Unavailable. No sample solds.
 
 ## What v0.4.1 does
 
@@ -37,7 +41,7 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 
 ### Scout match (code, not UI)
 
-Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, AUD first, FX stamped on conversions, auctions separate from fixed/BIN.
+Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, BIN + auction merged. AUD or FX-stamped conversions only.
 
 **Live solds:** Chamber `comps.php` is the baked-in default (also in `.env.example` and `eas.json`):
 
