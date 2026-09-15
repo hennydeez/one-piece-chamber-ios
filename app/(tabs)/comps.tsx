@@ -4,6 +4,7 @@ import { ChamberMark } from '@/src/components/ChamberMark';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { ChipRow } from '@/src/components/ChipRow';
 import { Field } from '@/src/components/Field';
+import { CompsLookupProgress } from '@/src/components/CompsLookupProgress';
 import { GoldButton } from '@/src/components/GoldButton';
 import { GradeChips } from '@/src/components/GradeChips';
 import { Last5SoldTable } from '@/src/components/Last5SoldTable';
@@ -52,6 +53,7 @@ export default function CompsScreen() {
   const runLookup = async () => {
     if (!query.cardCode) return;
     setLoading(true);
+    setResult(null);
     try {
       setSearchedPhotoUri(
         resolveQueryPhotoUri(query, {
@@ -120,6 +122,7 @@ export default function CompsScreen() {
       />
       <GradeChips type={type} value={grade} onChange={setGrade} />
       <GoldButton label="Get comps" onPress={runLookup} loading={loading} disabled={!query.cardCode} />
+      <CompsLookupProgress loading={loading} />
 
       {result ? (
         <View style={styles.results}>

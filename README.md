@@ -11,7 +11,11 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.4.2` |
+| App version | `0.4.3` |
+
+## What v0.4.3 does
+
+- **Get comps progress** — while a SoldComps lookup is in flight, Comps and card detail show a determinate bar + percent. It eases toward ~90% over ~25s (typical 10–60s wait), then finishes to 100% when the fetch returns. Short copy only (`Fetching solds…`). GoldButton stays disabled/loading. Empty and error still use the honest banner — no invented solds. Progress clears after the fetch resolves.
 
 ## What v0.4.2 does
 
