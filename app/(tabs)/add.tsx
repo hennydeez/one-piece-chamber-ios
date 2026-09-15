@@ -79,7 +79,10 @@ export default function AddCardScreen() {
     <ChamberScreen title="Add Card" subtitle="Snap or pick a photo. Fix the fields if OCR misses.">
       <CardForm
         draft={draft}
-        onChange={setDraft}
+        onChange={(next) => {
+          setSaveError(null);
+          setDraft(next);
+        }}
         ocrMessage={ocrMessage}
         onCamera={() => router.push('/capture')}
         onLibrary={pickLibrary}
