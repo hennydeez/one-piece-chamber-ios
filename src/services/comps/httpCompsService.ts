@@ -98,7 +98,7 @@ export class HttpCompsService implements CompsService {
         query,
         solds,
         'live',
-        'Live solds. Newest 5 per channel.',
+        'Live solds. Newest 5.',
       );
     } catch {
       return emptyCompsResult(

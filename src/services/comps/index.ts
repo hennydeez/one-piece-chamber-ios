@@ -1,7 +1,16 @@
 import type { CompsService } from '../../models/comps';
 import { HttpCompsService } from './httpCompsService';
 
-export { LAST5_AVG_LABEL, buildCompsResult, emptyCompsResult, honestCountLabel, selectLast5, stampLast5Avg } from './last5Avg';
+export {
+  LAST5_AVG_LABEL,
+  buildCompsResult,
+  emptyCompsResult,
+  honestCountLabel,
+  selectLast5,
+  selectMergedLast5,
+  stampLast5Avg,
+  stampMergedLast5Avg,
+} from './last5Avg';
 export { filterMatchingSolds, matchesScoutRules } from './scoutMatch';
 export { UNCONFIGURED_COMPS_MESSAGE, UnconfiguredCompsService } from './unconfiguredCompsService';
 export { HttpCompsService } from './httpCompsService';

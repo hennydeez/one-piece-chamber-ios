@@ -6,7 +6,7 @@ import { ChipRow } from '@/src/components/ChipRow';
 import { Field } from '@/src/components/Field';
 import { GoldButton } from '@/src/components/GoldButton';
 import { GradeChips } from '@/src/components/GradeChips';
-import { Last5AvgStamp } from '@/src/components/Last5AvgStamp';
+import { Last5SoldTable } from '@/src/components/Last5SoldTable';
 import { useChamber } from '@/src/context/ChamberContext';
 import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/card';
 import type { CompQuery, CompsResult } from '@/src/models/comps';
@@ -131,8 +131,7 @@ export default function CompsScreen() {
             )}
           </View>
           <Text style={styles.bannerText}>{result.sourceMessage}</Text>
-          <Last5AvgStamp avg={result.fixed} sourceStatus={result.sourceStatus} />
-          <Last5AvgStamp avg={result.auction} sourceStatus={result.sourceStatus} />
+          <Last5SoldTable avg={result.last5} />
         </View>
       ) : null}
     </ChamberScreen>
