@@ -16,6 +16,8 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 ## What v0.4.3 does
 
 - **Get comps progress** — while a SoldComps lookup is in flight, Comps and card detail show a determinate bar + percent. It eases toward ~90% over ~25s (typical 10–60s wait), then finishes to 100% when the fetch returns. Short copy only (`Fetching solds…`). GoldButton stays disabled/loading. Empty and error still use the honest banner — no invented solds. Progress clears after the fetch resolves.
+- **Cleaner last-5** — playset, x4, “lot of”, and bundle titles are dropped from the last-5 when the API sent a title. Missing title stays. Nothing invented. Title still sits under Date.
+- **Honest timeout** — Get comps aborts around 50s and says `Comps took too long. Try again.` No fake solds.
 
 ## What v0.4.2 does
 
@@ -45,7 +47,7 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 
 ### Scout match (code, not UI)
 
-Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, BIN + auction merged. AUD or FX-stamped conversions only.
+Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, BIN + auction merged. AUD or FX-stamped conversions only. Playset / x4 / “lot of” / bundle titles are dropped when present.
 
 **Live solds:** Chamber `comps.php` is the baked-in default (also in `.env.example` and `eas.json`):
 
@@ -169,7 +171,7 @@ src/services/comps/  CompsService, Scout match, Last-5 avg
 ## Honesty rules
 
 - OCR messages say it missed, needs a full build, or to check the fields. Prefill is never treated as confirmed.
-- Comps use the baked-in Chamber `comps.php` URL unless you override `EXPO_PUBLIC_COMPS_API_URL`. No sample prices. No leftover stub / `example.invalid` rows.
+- Comps use the baked-in Chamber `comps.php` URL unless you override `EXPO_PUBLIC_COMPS_API_URL`. No sample prices. No leftover stub / `example.invalid` rows. Timeout is `Comps took too long. Try again.` — never fake solds.
 - **Last-5 avg (AUD)** is `Unavailable` when `n=0`.
 - No ripped One Piece IP art is included.
 

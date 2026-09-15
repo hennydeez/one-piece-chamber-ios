@@ -1,5 +1,6 @@
 import type { CompQuery, CompSold, CompsResult, CompsSourceStatus, Last5Avg, SaleChannel } from '../../models/comps';
 import { mean } from '../../lib/money';
+import { withoutNoiseTitles } from './noiseTitle';
 import { filterMatchingSolds } from './scoutMatch';
 import { isSampleSold } from './sourceLink';
 
@@ -19,15 +20,18 @@ function isFxStamped(sold: CompSold): boolean {
 }
 
 function liveEligible(solds: CompSold[]): CompSold[] {
-  return solds.filter((sold) => !isSampleSold(sold) && (isAud(sold) || isFxStamped(sold)));
+  return withoutNoiseTitles(
+    solds.filter((sold) => !isSampleSold(sold) && (isAud(sold) || isFxStamped(sold))),
+  );
 }
 
 /**
  * Newest completed solds, AUD-first, max 5.
  * Non-AUD rows may fill remaining slots only if they already carry a stamped FX conversion.
+ * Noise titles (playset / x4 / lot of / bundle) are dropped when title is present.
  */
 export function selectLast5(solds: CompSold[]): CompSold[] {
-  const live = solds.filter((sold) => !isSampleSold(sold));
+  const live = withoutNoiseTitles(solds.filter((sold) => !isSampleSold(sold)));
   const aud = live.filter(isAud).sort(byNewest);
   const converted = live.filter(isFxStamped).sort(byNewest);
   return [...aud, ...converted].slice(0, LAST5_MAX);
@@ -36,6 +40,7 @@ export function selectLast5(solds: CompSold[]): CompSold[] {
 /**
  * Merge BIN + auction solds, newest first, max 5.
  * Same eligibility as selectLast5: live AUD, or a stamped FX conversion. Does not invent prices.
+ * Drops playset / x4 / “lot of” / bundle titles when the API sent one. Untitled rows stay.
  */
 export function selectMergedLast5(solds: CompSold[]): CompSold[] {
   return liveEligible(solds).sort(byNewest).slice(0, LAST5_MAX);

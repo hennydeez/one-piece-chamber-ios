@@ -114,6 +114,19 @@ describe('Last-5 avg', () => {
     assert.equal(chosen.length, 0);
   });
 
+  it('drops noise titles from last-5 and keeps untitled rows', () => {
+    const chosen = selectLast5([
+      sold({ id: 'playset', soldAt: '2026-01-06', priceAud: 400, channel: 'fixed', title: 'Playset' }),
+      sold({ id: 'clean', soldAt: '2026-01-05', priceAud: 100, channel: 'fixed', title: 'OP01-001 Luffy PSA 10' }),
+      sold({ id: 'untitled', soldAt: '2026-01-04', priceAud: 90, channel: 'fixed' }),
+    ]);
+    assert.deepEqual(
+      chosen.map((s) => s.id),
+      ['clean', 'untitled'],
+    );
+    assert.equal(chosen[1]?.title, undefined);
+  });
+
   it('drops leftover sample / example.invalid solds from the last 5', () => {
     const chosen = selectLast5([
       sold({
@@ -255,6 +268,52 @@ describe('merged last-5', () => {
       chosen.map((s) => s.id),
       ['live'],
     );
+  });
+
+  it('drops noise titles from the merged last-5 and keeps untitled rows', () => {
+    const chosen = selectMergedLast5([
+      sold({ id: 'playset', soldAt: '2026-01-06', priceAud: 400, channel: 'fixed', title: 'OP01-001 playset' }),
+      sold({ id: 'x4', soldAt: '2026-01-05', priceAud: 350, channel: 'auction', title: 'Luffy X4' }),
+      sold({ id: 'lot', soldAt: '2026-01-04', priceAud: 300, channel: 'fixed', title: 'Lot of 3 Luffy' }),
+      sold({ id: 'bundle', soldAt: '2026-01-03', priceAud: 250, channel: 'auction', title: 'Sealed bundle' }),
+      sold({ id: 'clean', soldAt: '2026-01-02', priceAud: 80, channel: 'fixed', title: 'OP01-001 Luffy PSA 10' }),
+      sold({ id: 'untitled', soldAt: '2026-01-01', priceAud: 90, channel: 'auction' }),
+    ]);
+    assert.deepEqual(
+      chosen.map((s) => s.id),
+      ['clean', 'untitled'],
+    );
+    assert.equal(chosen[0]?.title, 'OP01-001 Luffy PSA 10');
+    assert.equal(chosen[1]?.title, undefined);
+  });
+
+  it('lets cleaner solds fill last-5 when newer rows are noise', () => {
+    const chosen = selectMergedLast5([
+      sold({ id: 'noise-new', soldAt: '2026-01-10', priceAud: 999, channel: 'fixed', title: 'PLAYSET x4' }),
+      sold({ id: 'a', soldAt: '2026-01-09', priceAud: 10, channel: 'auction', title: 'OP01-001' }),
+      sold({ id: 'b', soldAt: '2026-01-08', priceAud: 20, channel: 'fixed' }),
+      sold({ id: 'c', soldAt: '2026-01-07', priceAud: 30, channel: 'auction', title: 'Romance Dawn' }),
+      sold({ id: 'd', soldAt: '2026-01-06', priceAud: 40, channel: 'fixed', title: 'Leader EN' }),
+      sold({ id: 'e', soldAt: '2026-01-05', priceAud: 50, channel: 'auction' }),
+      sold({ id: 'too-old', soldAt: '2026-01-04', priceAud: 60, channel: 'fixed', title: 'older clean' }),
+    ]);
+    assert.deepEqual(
+      chosen.map((s) => s.id),
+      ['a', 'b', 'c', 'd', 'e'],
+    );
+    assert.equal(chosen.length, 5);
+  });
+
+  it('averages only the cleaner rows actually shown', () => {
+    const stamped = stampMergedLast5Avg([
+      sold({ id: 'lot', soldAt: '2026-01-03', priceAud: 900, channel: 'fixed', title: 'lot of 4' }),
+      sold({ id: 'a', soldAt: '2026-01-02', priceAud: 10, channel: 'auction', title: 'OP01-001' }),
+      sold({ id: 'b', soldAt: '2026-01-01', priceAud: 30, channel: 'fixed' }),
+    ]);
+    assert.equal(stamped.n, 2);
+    assert.equal(stamped.averageAud, 20);
+    assert.equal(stamped.honestCountLabel, 'n=2 of 5');
+    assert.equal(stamped.solds.some((row) => row.id === 'lot'), false);
   });
 
   it('puts the merged last-5 on CompsResult.last5', () => {
