@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import { ChamberMark } from '@/src/components/ChamberMark';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
+import { CompsLookupProgress } from '@/src/components/CompsLookupProgress';
 import { GoldButton } from '@/src/components/GoldButton';
 import { Last5SoldTable } from '@/src/components/Last5SoldTable';
 import { useChamber } from '@/src/context/ChamberContext';
@@ -57,6 +58,7 @@ export default function CardDetailScreen() {
 
   const loadComps = async () => {
     setLoadingComps(true);
+    setComps(null);
     try {
       setComps(
         await lookupComps({
@@ -92,6 +94,7 @@ export default function CardDetailScreen() {
         <Row label="Notes" value={card.notes ?? '—'} />
       </View>
       <GoldButton label="Get comps" onPress={loadComps} loading={loadingComps} />
+      <CompsLookupProgress loading={loadingComps} />
       {comps ? (
         <View style={styles.comps}>
           <Text style={styles.banner}>{comps.sourceMessage}</Text>
