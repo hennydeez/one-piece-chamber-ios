@@ -14,6 +14,7 @@ import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/car
 import type { CompQuery } from '@/src/models/comps';
 import { snapGradeToChips } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp, type CompLanguage } from '@/src/lib/language';
+import { compsViewMessage } from '@/src/services/comps/last5Avg';
 import { resolveQueryPhotoUri } from '@/src/services/comps/queryPhoto';
 import { chamber } from '@/src/theme/chamber';
 
@@ -127,7 +128,7 @@ export default function CompsScreen() {
               <ChamberMark size={72} />
             )}
           </View>
-          <Text style={styles.bannerText}>{result.sourceMessage}</Text>
+          <Text style={styles.bannerText}>{compsViewMessage(result, view)}</Text>
           <CompsResults result={result} view={view} onViewChange={(next) => void changeView(next)} />
         </View>
       ) : null}

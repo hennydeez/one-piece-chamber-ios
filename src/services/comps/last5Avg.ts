@@ -15,6 +15,21 @@ import { isSampleSold } from './sourceLink';
 
 export const LAST5_AVG_LABEL = 'Last-5 avg (AUD)' as const;
 export const LAST5_MAX = 5;
+export const QUICK_SOURCE_MESSAGE = 'Live solds. Newest 5.';
+export const DETAILED_SOURCE_MESSAGE = 'Live solds. Last 6 months.';
+
+export function compsViewMessage(result: CompsResult, view: CompsLookupMode): string {
+  if (view === 'detailed' && result.sourceStatus === 'live') return DETAILED_SOURCE_MESSAGE;
+  return result.sourceMessage;
+}
+
+/** Last 6 months uses solds already on the result. Only refetch when live n=0. */
+export function shouldRefetchDetailed(result: CompsResult | null): boolean {
+  if (!result) return false;
+  if (result.lookupMode === 'detailed') return false;
+  if (result.solds.length > 0) return false;
+  return result.sourceStatus === 'live';
+}
 
 function byNewest(a: CompSold, b: CompSold): number {
   return new Date(b.soldAt).getTime() - new Date(a.soldAt).getTime();

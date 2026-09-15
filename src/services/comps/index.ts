@@ -2,13 +2,17 @@ import type { CompsService } from '../../models/comps';
 import { HttpCompsService } from './httpCompsService';
 
 export {
+  DETAILED_SOURCE_MESSAGE,
   LAST5_AVG_LABEL,
+  QUICK_SOURCE_MESSAGE,
   buildCompsResult,
+  compsViewMessage,
   emptyCompsResult,
   honestCountLabel,
   selectLast5,
   selectLiveSolds,
   selectMergedLast5,
+  shouldRefetchDetailed,
   stampLast5Avg,
   stampMergedLast5Avg,
 } from './last5Avg';

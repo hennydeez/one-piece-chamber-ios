@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { CompQuery, CompsLookupMode, CompsLookupOptions, CompsResult } from '@/src/models/comps';
+import { shouldRefetchDetailed } from '@/src/services/comps/last5Avg';
 
 export function useCompsLookup(
   lookupComps: (query: CompQuery, options?: CompsLookupOptions) => Promise<CompsResult>,
@@ -39,11 +40,8 @@ export function useCompsLookup(
         setView('quick');
         return;
       }
-      if (result?.lookupMode === 'detailed') {
-        setView('detailed');
-        return;
-      }
-      if (!result) return;
+      setView('detailed');
+      if (!result || !shouldRefetchDetailed(result)) return;
       await runLookup(result.query, 'detailed');
     },
     [loading, result, runLookup],

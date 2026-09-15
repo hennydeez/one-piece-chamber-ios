@@ -3,10 +3,13 @@ import { describe, it } from 'node:test';
 import type { CompQuery, CompSold } from '../../models/comps';
 import {
   LAST5_AVG_LABEL,
+  DETAILED_SOURCE_MESSAGE,
   buildCompsResult,
+  compsViewMessage,
   honestCountLabel,
   selectLast5,
   selectMergedLast5,
+  shouldRefetchDetailed,
   stampMergedLast5Avg,
 } from './last5Avg';
 
@@ -351,6 +354,23 @@ describe('merged last-5', () => {
       result.last5.solds.map((row) => row.id),
       ['sep', 'old'],
     );
+  });
+
+  it('does not refetch Last 6 months when solds are already on the result', () => {
+    const withSolds = buildCompsResult(
+      query,
+      [sold({ id: 'sep', soldAt: '2026-09-04', priceAud: 120, channel: 'fixed' })],
+      'live',
+      'ok',
+      '2026-09-15T12:00:00.000Z',
+    );
+    assert.equal(shouldRefetchDetailed(withSolds), false);
+    assert.equal(compsViewMessage(withSolds, 'detailed'), DETAILED_SOURCE_MESSAGE);
+    assert.equal(shouldRefetchDetailed(null), false);
+    const emptyLive = buildCompsResult(query, [], 'live', 'ok');
+    assert.equal(shouldRefetchDetailed(emptyLive), true);
+    const failed = buildCompsResult(query, [], 'error', 'Comps quota exceeded. Try again.');
+    assert.equal(shouldRefetchDetailed(failed), false);
   });
 
   it('puts the merged last-5 on CompsResult.last5', () => {

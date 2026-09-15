@@ -1,9 +1,32 @@
 import type { CompQuery, CompSold, CompsLookupOptions, CompsService, CompsResult } from '../../models/comps';
-import { buildCompsResult, emptyCompsResult } from './last5Avg';
+import {
+  DETAILED_SOURCE_MESSAGE,
+  QUICK_SOURCE_MESSAGE,
+  buildCompsResult,
+  emptyCompsResult,
+} from './last5Avg';
 import { isSampleSold } from './sourceLink';
 
-export const DETAILED_SOURCE_MESSAGE = 'Live solds. Last 6 months.';
-export const QUICK_SOURCE_MESSAGE = 'Live solds. Newest 5.';
+export { DETAILED_SOURCE_MESSAGE, QUICK_SOURCE_MESSAGE };
+export const COMPS_QUOTA_MESSAGE = 'Comps quota exceeded. Try again.';
+
+export function sourceMessageFromPayload(payload: unknown, fallback: string): string {
+  if (!payload || typeof payload !== 'object') return fallback;
+  const raw = (payload as { sourceMessage?: unknown }).sourceMessage;
+  if (typeof raw !== 'string' || !raw.trim()) return fallback;
+  const msg = raw.trim();
+  if (/quota/i.test(msg)) return COMPS_QUOTA_MESSAGE;
+  return msg.length > 90 ? fallback : msg;
+}
+
+export function payloadSourceFailed(payload: unknown, soldCount: number): boolean {
+  if (soldCount > 0) return false;
+  if (!payload || typeof payload !== 'object') return false;
+  const status = (payload as { sourceStatus?: unknown }).sourceStatus;
+  if (status === 'error') return true;
+  const raw = (payload as { sourceMessage?: unknown }).sourceMessage;
+  return typeof raw === 'string' && /quota|error|fail|couldn/i.test(raw);
+}
 
 function asCompletedSold(value: unknown): CompSold | null {
   if (!value || typeof value !== 'object') return null;
@@ -86,9 +109,9 @@ export class HttpCompsService implements CompsService {
       if (query.grade) url.searchParams.set('grade', query.grade);
       if (query.printNote) url.searchParams.set('printNote', query.printNote);
       url.searchParams.set('completed', 'true');
+      url.searchParams.set('months', '6');
       if (lookupMode === 'detailed') {
         url.searchParams.set('mode', 'detailed');
-        url.searchParams.set('months', '6');
       }
 
       const response = await fetch(url.toString(), { signal: controller.signal });
@@ -121,6 +144,15 @@ export class HttpCompsService implements CompsService {
         .map(asCompletedSold)
         .filter((row): row is CompSold => row != null)
         .filter((row) => !isSampleSold(row));
+
+      if (payloadSourceFailed(payload, solds.length)) {
+        return emptyCompsResult(
+          query,
+          'error',
+          sourceMessageFromPayload(payload, COMPS_UNREACHABLE_MESSAGE),
+          lookupMode,
+        );
+      }
 
       return buildCompsResult(
         query,

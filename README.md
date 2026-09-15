@@ -18,7 +18,7 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 - **Quick / Last 6 months** — Get comps still opens **Quick**: newest 5 solds + **Last-5 avg (AUD)**. No chart. Tap **Last 6 months** for Detailed.
 - **Detailed** — last 6 calendar months, newest month first. Each month: `Sep 2026`, n solds, month avg AUD, then Date | AUD | BIN/Auc | eBay (title under date when the API sent one). Empty months stay visible with n=0 / Unavailable — no invented prices.
 - **Monthly avg chart** — View bars, oldest month on the left, AUD number on each bar. Empty months are a short tick + "—".
-- **API** — Detailed adds `mode=detailed&months=6`. Same JSON array / `{ solds: [] }` shape. If Hostinger still returns ≤20, the app groups what arrived. Pagination can come later.
+- **API** — Get comps sends `months=6`. Last 6 months groups those solds immediately (no second SoldComps call when rows already arrived). A wider pull can add `mode=detailed`. Same JSON array / `{ solds: [] }` shape. If Hostinger still returns ≤20, the app groups what arrived. Pagination can come later. Quota / error `sourceMessage` is shown honestly — never as live solds.
 - Playset / x4 / “lot of” / bundle titles are still dropped when present.
 
 ## What v0.4.3 does

@@ -9,6 +9,7 @@ import { GoldButton } from '@/src/components/GoldButton';
 import { useCompsLookup } from '@/src/components/useCompsLookup';
 import { useChamber } from '@/src/context/ChamberContext';
 import { formatDisplayDate } from '@/src/lib/dates';
+import { compsViewMessage } from '@/src/services/comps/last5Avg';
 import { formatAud } from '@/src/lib/money';
 import type { CollectionCard } from '@/src/models/card';
 import { chamber } from '@/src/theme/chamber';
@@ -91,7 +92,7 @@ export default function CardDetailScreen() {
       <CompsLookupProgress loading={loadingComps} />
       {comps ? (
         <View style={styles.comps}>
-          <Text style={styles.banner}>{comps.sourceMessage}</Text>
+          <Text style={styles.banner}>{compsViewMessage(comps, view)}</Text>
           <CompsResults result={comps} view={view} onViewChange={(next) => void changeView(next)} />
         </View>
       ) : null}
