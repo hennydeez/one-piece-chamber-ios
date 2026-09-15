@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { CardForm } from '@/src/components/CardForm';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { GoldButton } from '@/src/components/GoldButton';
@@ -9,11 +9,13 @@ import { useChamber } from '@/src/context/ChamberContext';
 import { emptyDraft, type CardDraft } from '@/src/models/card';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
+import { chamber } from '@/src/theme/chamber';
 
 export default function AddCardScreen() {
   const { saveDraft, pendingPhotoUri, setPendingPhotoUri } = useChamber();
   const [draft, setDraft] = useState<CardDraft>(emptyDraft());
   const [ocrMessage, setOcrMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const ingestPhoto = useCallback(async (uri: string) => {
@@ -54,6 +56,7 @@ export default function AddCardScreen() {
 
   const save = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
       const card = await saveDraft(draft);
       setDraft(emptyDraft());
@@ -64,7 +67,9 @@ export default function AddCardScreen() {
         router.replace('/(tabs)');
       }
     } catch (error) {
-      Alert.alert('Could not save', error instanceof Error ? error.message : 'Unknown error');
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setSaveError(message);
+      Alert.alert('Could not save', message);
     } finally {
       setSaving(false);
     }
@@ -79,7 +84,16 @@ export default function AddCardScreen() {
         onCamera={() => router.push('/capture')}
         onLibrary={pickLibrary}
       />
+      {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
       <GoldButton label="Save" onPress={save} loading={saving} />
     </ChamberScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  saveError: {
+    color: chamber.danger,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
