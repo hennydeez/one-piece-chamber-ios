@@ -11,6 +11,7 @@ export {
   stampLast5Avg,
   stampMergedLast5Avg,
 } from './last5Avg';
+export { isNoiseTitle, withoutNoiseTitles } from './noiseTitle';
 export { filterMatchingSolds, matchesScoutRules } from './scoutMatch';
 export { UNCONFIGURED_COMPS_MESSAGE, UnconfiguredCompsService } from './unconfiguredCompsService';
 export { HttpCompsService } from './httpCompsService';

@@ -48,14 +48,32 @@ function asCompletedSold(value: unknown): CompSold | null {
 
 export { asCompletedSold };
 
+/** SoldComps often takes 10–60s. Abort rather than hang or invent solds. */
+export const COMPS_FETCH_TIMEOUT_MS = 50_000;
+
+export const COMPS_TIMEOUT_MESSAGE = 'Comps took too long. Try again.';
+export const COMPS_UNREACHABLE_MESSAGE = 'Couldn’t reach comps.';
+
+function isAbortError(error: unknown): boolean {
+  return (
+    (typeof error === 'object' && error !== null && 'name' in error && (error as { name: string }).name === 'AbortError') ||
+    (error instanceof Error && error.name === 'AbortError')
+  );
+}
+
 /**
  * Live provider. Expects a JSON array (or `{ solds: [] }`) of completed solds.
- * Rejects incomplete rows. Never fabricates prices on error.
+ * Rejects incomplete rows. Never fabricates prices on error or timeout.
  */
 export class HttpCompsService implements CompsService {
-  constructor(readonly endpoint: string) {}
+  constructor(
+    readonly endpoint: string,
+    readonly timeoutMs = COMPS_FETCH_TIMEOUT_MS,
+  ) {}
 
   async getLastCompletedSolds(query: CompQuery): Promise<CompsResult> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
       const url = new URL(this.endpoint);
       url.searchParams.set('cardCode', query.cardCode);
@@ -65,7 +83,7 @@ export class HttpCompsService implements CompsService {
       if (query.printNote) url.searchParams.set('printNote', query.printNote);
       url.searchParams.set('completed', 'true');
 
-      const response = await fetch(url.toString());
+      const response = await fetch(url.toString(), { signal: controller.signal });
       if (!response.ok) {
         return emptyCompsResult(
           query,
@@ -100,12 +118,13 @@ export class HttpCompsService implements CompsService {
         'live',
         'Live solds. Newest 5.',
       );
-    } catch {
-      return emptyCompsResult(
-        query,
-        'error',
-        'Couldn’t reach comps.',
-      );
+    } catch (error) {
+      if (isAbortError(error) || controller.signal.aborted) {
+        return emptyCompsResult(query, 'error', COMPS_TIMEOUT_MESSAGE);
+      }
+      return emptyCompsResult(query, 'error', COMPS_UNREACHABLE_MESSAGE);
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }
