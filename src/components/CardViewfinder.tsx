@@ -16,7 +16,7 @@ export function CardViewfinder({ width, height, kind }: Props) {
   const bottom = Math.max(0, height - frame.y - frame.height);
 
   return (
-    <View style={styles.root} pointerEvents="none">
+    <View style={styles.root}>
       <View style={[styles.dim, { height: frame.y }]} />
       <View style={[styles.mid, { height: frame.height }]}>
         <View style={[styles.dim, { width: frame.x }]} />
@@ -33,21 +33,22 @@ export function CardViewfinder({ width, height, kind }: Props) {
   );
 }
 
-const CORNER = 22;
-const THICK = 3;
+const CORNER = 26;
+const THICK = 4;
 
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFill,
+    pointerEvents: 'none',
   },
   dim: {
-    backgroundColor: 'rgba(10, 9, 8, 0.62)',
+    backgroundColor: 'rgba(10, 9, 8, 0.72)',
   },
   mid: {
     flexDirection: 'row',
   },
   hole: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: chamber.gold,
   },
   corner: {
