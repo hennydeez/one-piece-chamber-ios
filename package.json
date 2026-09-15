@@ -1,7 +1,7 @@
 {
   "name": "one-piece-chamber",
   "main": "expo-router/entry",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "private": true,
   "engines": {
     "node": ">=20"

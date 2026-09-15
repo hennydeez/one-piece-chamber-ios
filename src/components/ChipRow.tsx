@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   chipOn: {
     borderColor: chamber.gold,
-    backgroundColor: '#2A2314',
+    backgroundColor: chamber.goldWash,
   },
   chipText: {
     color: chamber.muted,

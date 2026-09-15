@@ -1,4 +1,4 @@
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -16,9 +16,9 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 const navTheme = {
-  ...DarkTheme,
+  ...DefaultTheme,
   colors: {
-    ...DarkTheme.colors,
+    ...DefaultTheme.colors,
     ...chamberTheme.colors,
   },
 };
@@ -31,7 +31,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={navTheme}>
       <RootProviders>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: chamber.bgElevated },

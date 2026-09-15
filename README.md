@@ -4,14 +4,18 @@ Expo + React Native + TypeScript iOS app for tracking a **One Piece TCG** collec
 
 Photograph raw cards or PSA / BGS / TAG slabs, persist them in SQLite, attempt on-device OCR to prefill fields, and look up a stamped **Last-5 avg (AUD)** from completed solds that match Scout rules.
 
-This repository does **not** ship licensed One Piece artwork. The UI is an original dark “chamber” theme with a geometric vault mark.
+This repository does **not** ship licensed One Piece artwork. The UI is an original orange-and-white chamber theme with a geometric vault mark.
 
 | | |
 | --- | --- |
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.4.3` |
+| App version | `0.5.0` |
+
+## What v0.5.0 does
+
+- **Orange + white theme** — paper-white screens, dark ink text, burnt-orange accents on buttons, selected chips, links, tabs, and the Get comps bar. Replaces the dark gold / sunken look. `GoldButton` stays the primary button (now orange). Splash and Android background hexes match. Logo art unchanged.
 
 ## What v0.4.3 does
 
