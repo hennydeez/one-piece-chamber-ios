@@ -4,6 +4,7 @@ import { normalizeGrade, normalizePrintNote } from '../models/card';
 import { parseAudInput } from '../lib/money';
 import { createId } from '../lib/ids';
 import { validateGrade } from '../lib/grade';
+import { parseAuDateToIso } from '../lib/dates';
 
 interface CardRow {
   id: string;
@@ -49,7 +50,7 @@ export function draftToPersistable(draft: CardDraft, existing?: CollectionCard):
     certNumber: draft.certNumber.trim() || null,
     printNote: normalizePrintNote(draft.printNote),
     language: (draft.language.trim() || 'EN').toUpperCase(),
-    purchaseDate: draft.purchaseDate.trim() || null,
+    purchaseDate: draft.purchaseDate.trim() ? parseAuDateToIso(draft.purchaseDate) : null,
     purchasePriceAud: parseAudInput(draft.purchasePriceAud),
     notes: draft.notes.trim() || null,
     photoUri: draft.photoUri,
@@ -64,8 +65,8 @@ export function validateDraft(draft: CardDraft): string | null {
   if (draft.purchasePriceAud.trim() && parseAudInput(draft.purchasePriceAud) == null) {
     return 'Purchase price must be a valid AUD amount.';
   }
-  if (draft.purchaseDate.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(draft.purchaseDate.trim())) {
-    return 'Purchase date must be YYYY-MM-DD.';
+  if (draft.purchaseDate.trim() && !parseAuDateToIso(draft.purchaseDate)) {
+    return 'Use dd-mm-yyyy.';
   }
   const gradeError = validateGrade(draft.grade, draft.type);
   if (gradeError) return gradeError;

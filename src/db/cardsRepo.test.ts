@@ -18,6 +18,23 @@ describe('cardsRepo helpers', () => {
     assert.equal(validateDraft(draft), 'Purchase price must be a valid AUD amount.');
   });
 
+  it('rejects a purchase date that is not dd-mm-yyyy', () => {
+    const iso = { ...emptyDraft(), cardCode: 'OP01-001', purchaseDate: '2026-09-15' };
+    const slashes = { ...emptyDraft(), cardCode: 'OP01-001', purchaseDate: '15/09/2026' };
+    const impossible = { ...emptyDraft(), cardCode: 'OP01-001', purchaseDate: '31-02-2026' };
+    assert.equal(validateDraft(iso), 'Use dd-mm-yyyy.');
+    assert.equal(validateDraft(slashes), 'Use dd-mm-yyyy.');
+    assert.equal(validateDraft(impossible), 'Use dd-mm-yyyy.');
+  });
+
+  it('accepts blank or valid AU purchase dates', () => {
+    assert.equal(validateDraft({ ...emptyDraft(), cardCode: 'OP01-001' }), null);
+    assert.equal(
+      validateDraft({ ...emptyDraft(), cardCode: 'OP01-001', purchaseDate: '15-09-2026' }),
+      null,
+    );
+  });
+
   it('normalizes code, language, and blank print', () => {
     const card = draftToPersistable({
       ...emptyDraft(),
@@ -31,5 +48,14 @@ describe('cardsRepo helpers', () => {
     assert.equal(card.printNote, null);
     assert.equal(card.purchasePriceAud, 125.5);
     assert.equal(card.type, 'Raw');
+  });
+
+  it('stores purchase date as ISO YYYY-MM-DD', () => {
+    const card = draftToPersistable({
+      ...emptyDraft(),
+      cardCode: 'OP01-001',
+      purchaseDate: '15-09-2026',
+    });
+    assert.equal(card.purchaseDate, '2026-09-15');
   });
 });

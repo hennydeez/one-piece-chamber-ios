@@ -11,7 +11,11 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.4.3` |
+| App version | `0.4.4` |
+
+## What v0.4.4 does
+
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy. Last-5 sold dates stay as they were.
 
 ## What v0.4.3 does
 
