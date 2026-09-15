@@ -1,6 +1,9 @@
-import type { CompQuery, CompSold, CompsService, CompsResult } from '../../models/comps';
+import type { CompQuery, CompSold, CompsLookupOptions, CompsService, CompsResult } from '../../models/comps';
 import { buildCompsResult, emptyCompsResult } from './last5Avg';
 import { isSampleSold } from './sourceLink';
+
+export const DETAILED_SOURCE_MESSAGE = 'Live solds. Last 6 months.';
+export const QUICK_SOURCE_MESSAGE = 'Live solds. Newest 5.';
 
 function asCompletedSold(value: unknown): CompSold | null {
   if (!value || typeof value !== 'object') return null;
@@ -71,7 +74,8 @@ export class HttpCompsService implements CompsService {
     readonly timeoutMs = COMPS_FETCH_TIMEOUT_MS,
   ) {}
 
-  async getLastCompletedSolds(query: CompQuery): Promise<CompsResult> {
+  async getLastCompletedSolds(query: CompQuery, options?: CompsLookupOptions): Promise<CompsResult> {
+    const lookupMode = options?.mode === 'detailed' ? 'detailed' : 'quick';
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
@@ -82,6 +86,10 @@ export class HttpCompsService implements CompsService {
       if (query.grade) url.searchParams.set('grade', query.grade);
       if (query.printNote) url.searchParams.set('printNote', query.printNote);
       url.searchParams.set('completed', 'true');
+      if (lookupMode === 'detailed') {
+        url.searchParams.set('mode', 'detailed');
+        url.searchParams.set('months', '6');
+      }
 
       const response = await fetch(url.toString(), { signal: controller.signal });
       if (!response.ok) {
@@ -89,6 +97,7 @@ export class HttpCompsService implements CompsService {
           query,
           'error',
           `Comps source failed (HTTP ${response.status}).`,
+          lookupMode,
         );
       }
 
@@ -104,6 +113,7 @@ export class HttpCompsService implements CompsService {
           query,
           'error',
           'Comps source sent a bad response.',
+          lookupMode,
         );
       }
 
@@ -116,13 +126,15 @@ export class HttpCompsService implements CompsService {
         query,
         solds,
         'live',
-        'Live solds. Newest 5.',
+        lookupMode === 'detailed' ? DETAILED_SOURCE_MESSAGE : QUICK_SOURCE_MESSAGE,
+        undefined,
+        lookupMode,
       );
     } catch (error) {
       if (isAbortError(error) || controller.signal.aborted) {
-        return emptyCompsResult(query, 'error', COMPS_TIMEOUT_MESSAGE);
+        return emptyCompsResult(query, 'error', COMPS_TIMEOUT_MESSAGE, lookupMode);
       }
-      return emptyCompsResult(query, 'error', COMPS_UNREACHABLE_MESSAGE);
+      return emptyCompsResult(query, 'error', COMPS_UNREACHABLE_MESSAGE, lookupMode);
     } finally {
       clearTimeout(timeoutId);
     }

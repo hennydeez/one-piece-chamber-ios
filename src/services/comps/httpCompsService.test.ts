@@ -3,7 +3,9 @@ import { afterEach, describe, it } from 'node:test';
 import {
   COMPS_TIMEOUT_MESSAGE,
   COMPS_UNREACHABLE_MESSAGE,
+  DETAILED_SOURCE_MESSAGE,
   HttpCompsService,
+  QUICK_SOURCE_MESSAGE,
   asCompletedSold,
 } from './httpCompsService';
 
@@ -90,6 +92,70 @@ describe('asCompletedSold source fields', () => {
     });
     assert.ok(sold);
     assert.equal(sold.sourceUrl, 'https://www.pricecharting.com/game/op01-001');
+  });
+});
+
+describe('HttpCompsService query params', () => {
+  it('keeps the quick lookup without mode or months', async () => {
+    let requested = '';
+    globalThis.fetch = async (input) => {
+      requested = String(input);
+      return new Response(JSON.stringify([]), { status: 200 });
+    };
+
+    const result = await new HttpCompsService('https://example.com/comps.php').getLastCompletedSolds(query);
+    const url = new URL(requested);
+    assert.equal(url.searchParams.get('cardCode'), 'OP01-001');
+    assert.equal(url.searchParams.get('completed'), 'true');
+    assert.equal(url.searchParams.get('mode'), null);
+    assert.equal(url.searchParams.get('months'), null);
+    assert.equal(result.lookupMode, 'quick');
+    assert.equal(result.sourceMessage, QUICK_SOURCE_MESSAGE);
+    assert.equal(result.months.length, 6);
+  });
+
+  it('adds mode=detailed and months=6 for Last 6 months', async () => {
+    let requested = '';
+    globalThis.fetch = async (input) => {
+      requested = String(input);
+      return new Response(
+        JSON.stringify([
+          {
+            ...base,
+            id: 'sep',
+            soldAt: '2026-09-02T00:00:00.000Z',
+            priceAud: 120,
+            priceOriginal: 120,
+            language: 'EN',
+            grade: '10',
+            sourceUrl: 'https://www.ebay.com/itm/sep',
+          },
+          {
+            ...base,
+            id: 'apr',
+            soldAt: '2026-04-10T00:00:00.000Z',
+            priceAud: 80,
+            priceOriginal: 80,
+            language: 'EN',
+            grade: '10',
+            sourceUrl: 'https://www.ebay.com/itm/apr',
+          },
+        ]),
+        { status: 200 },
+      );
+    };
+
+    const result = await new HttpCompsService('https://example.com/comps.php').getLastCompletedSolds(query, {
+      mode: 'detailed',
+    });
+    const url = new URL(requested);
+    assert.equal(url.searchParams.get('mode'), 'detailed');
+    assert.equal(url.searchParams.get('months'), '6');
+    assert.equal(result.lookupMode, 'detailed');
+    assert.equal(result.sourceMessage, DETAILED_SOURCE_MESSAGE);
+    assert.equal(result.solds.length, 2);
+    assert.equal(result.months.length, 6);
+    assert.equal(result.last5.n, 2);
   });
 });
 

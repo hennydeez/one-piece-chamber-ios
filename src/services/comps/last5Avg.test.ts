@@ -68,6 +68,12 @@ describe('Last-5 avg', () => {
     assert.equal(result.fixed.averageAud, null);
     assert.equal(result.fixed.n, 0);
     assert.equal(result.auction.averageAud, null);
+    assert.equal(result.solds.length, 0);
+    assert.equal(result.months.length, 6);
+    assert.equal(
+      result.months.every((month) => month.n === 0 && month.averageAud === null),
+      true,
+    );
   });
 
   it('keeps auctions out of the fixed average', () => {
@@ -314,6 +320,37 @@ describe('merged last-5', () => {
     assert.equal(stamped.averageAud, 20);
     assert.equal(stamped.honestCountLabel, 'n=2 of 5');
     assert.equal(stamped.solds.some((row) => row.id === 'lot'), false);
+  });
+
+  it('puts last-6-month buckets on CompsResult without inventing prices', () => {
+    const result = buildCompsResult(
+      query,
+      [
+        sold({ id: 'sep', soldAt: '2026-09-04', priceAud: 120, channel: 'fixed' }),
+        sold({ id: 'lot', soldAt: '2026-09-03', priceAud: 900, channel: 'auction', title: 'lot of 4' }),
+        sold({ id: 'old', soldAt: '2025-01-01', priceAud: 40, channel: 'fixed' }),
+      ],
+      'live',
+      'ok',
+      '2026-09-15T12:00:00.000Z',
+      'detailed',
+    );
+    assert.equal(result.lookupMode, 'detailed');
+    assert.equal(result.months.length, 6);
+    assert.equal(result.months[0]?.label, 'Sep 2026');
+    assert.equal(result.months[0]?.n, 1);
+    assert.equal(result.months[0]?.averageAud, 120);
+    assert.equal(result.solds.some((row) => row.id === 'lot'), false);
+    assert.equal(result.months[0]?.solds.some((row) => row.id === 'lot'), false);
+    assert.equal(
+      result.months.slice(1).every((month) => month.n === 0 && month.averageAud === null),
+      true,
+    );
+    assert.equal(result.last5.n, 2);
+    assert.deepEqual(
+      result.last5.solds.map((row) => row.id),
+      ['sep', 'old'],
+    );
   });
 
   it('puts the merged last-5 on CompsResult.last5', () => {
