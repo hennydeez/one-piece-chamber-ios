@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Modal } from 'react-native';
+import { Alert, Modal, StyleSheet, Text } from 'react-native';
 import { CardForm } from '@/src/components/CardForm';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { GoldButton } from '@/src/components/GoldButton';
@@ -12,11 +12,13 @@ import { cropLibraryPhoto } from '@/src/lib/cropPhoto';
 import { emptyDraft, type CardDraft } from '@/src/models/card';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
+import { chamber } from '@/src/theme/chamber';
 
 export default function AddCardScreen() {
   const { saveDraft, pendingPhotoUri, setPendingPhotoUri } = useChamber();
   const [draft, setDraft] = useState<CardDraft>(emptyDraft());
   const [ocrMessage, setOcrMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [reviewUri, setReviewUri] = useState<string | null>(null);
   const [reviewBusy, setReviewBusy] = useState(false);
@@ -72,6 +74,7 @@ export default function AddCardScreen() {
 
   const save = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
       const card = await saveDraft(draft);
       setDraft(emptyDraft());
@@ -82,7 +85,9 @@ export default function AddCardScreen() {
         router.replace('/(tabs)');
       }
     } catch (error) {
-      Alert.alert('Could not save', error instanceof Error ? error.message : 'Unknown error');
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setSaveError(message);
+      Alert.alert('Could not save', message);
     } finally {
       setSaving(false);
     }
@@ -92,7 +97,10 @@ export default function AddCardScreen() {
     <ChamberScreen title="Add Card" subtitle="Snap or pick a photo. Fix the fields if OCR misses.">
       <CardForm
         draft={draft}
-        onChange={setDraft}
+        onChange={(next) => {
+          setSaveError(null);
+          setDraft(next);
+        }}
         ocrMessage={ocrMessage}
         onCamera={() =>
           router.push({
@@ -102,6 +110,7 @@ export default function AddCardScreen() {
         }
         onLibrary={pickLibrary}
       />
+      {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
       <GoldButton label="Save" onPress={save} loading={saving} />
       <Modal
         visible={reviewUri != null}
@@ -127,3 +136,11 @@ export default function AddCardScreen() {
     </ChamberScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  saveError: {
+    color: chamber.danger,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});

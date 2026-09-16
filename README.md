@@ -11,11 +11,25 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.5.0` |
+| App version | `0.7.0` |
+
+## What v0.7.0 does
+
+- **Orange + white theme** — paper-white screens, dark ink text, burnt-orange accents on buttons, selected chips, links, tabs, and the Get comps bar. Camera viewfinder, crop, and Look good? Use / Retake use the same tokens. `GoldButton` stays the primary button (now orange). Splash and Android background hexes match.
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy.
+
+## What v0.6.1 does
+
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy. Last-5 sold dates stay as they were.
+- **Card viewfinder** — camera hole + crop after snap, then Look good? Use / Retake. Library pick uses the same confirm. `expo-image-manipulator` stays behind a native-module check so Expo Go soft-fails.
 
 ## What v0.5.0 does
 
 - **Orange + white theme** — paper-white screens, dark ink text, burnt-orange accents on buttons, selected chips, links, tabs, and the Get comps bar. Replaces the dark gold / sunken look. `GoldButton` stays the primary button (now orange). Splash and Android background hexes match. Logo art unchanged.
+
+## What v0.4.4 does
+
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy. Last-5 sold dates stay as they were.
 
 ## What v0.4.3 does
 

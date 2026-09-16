@@ -1,3 +1,5 @@
+import { toAuPurchaseDateInput } from '../lib/dates';
+
 export const CARD_TYPES = ['Raw', 'PSA', 'BGS', 'TAG'] as const;
 export type CardType = (typeof CARD_TYPES)[number];
 
@@ -60,7 +62,7 @@ export function draftFromCard(card: CollectionCard): CardDraft {
     certNumber: card.certNumber ?? '',
     printNote: card.printNote ?? '',
     language: card.language,
-    purchaseDate: card.purchaseDate ?? '',
+    purchaseDate: toAuPurchaseDateInput(card.purchaseDate),
     purchasePriceAud:
       card.purchasePriceAud == null ? '' : String(card.purchasePriceAud),
     notes: card.notes ?? '',

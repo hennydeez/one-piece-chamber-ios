@@ -5,7 +5,7 @@ import { Field } from './Field';
 import { ChipRow } from './ChipRow';
 import { GoldButton } from './GoldButton';
 import { ChamberMark } from './ChamberMark';
-import { todayIsoDate } from '@/src/lib/dates';
+import { todayAuDate } from '@/src/lib/dates';
 import { snapGradeToChips } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp } from '@/src/lib/language';
 import { GradeChips } from './GradeChips';
@@ -94,10 +94,11 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
       <Field
         label="Purchase date"
         value={draft.purchaseDate}
-        placeholder="YYYY-MM-DD"
+        placeholder="dd-mm-yyyy"
+        hint="Use dd-mm-yyyy."
         onChangeText={(purchaseDate) => set('purchaseDate', purchaseDate)}
       />
-      <GoldButton label="Use today’s date" tone="ghost" onPress={() => set('purchaseDate', todayIsoDate())} />
+      <GoldButton label="Use today’s date" tone="ghost" onPress={() => set('purchaseDate', todayAuDate())} />
       <Field
         label="Purchase price (AUD)"
         value={draft.purchasePriceAud}
