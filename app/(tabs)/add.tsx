@@ -1,11 +1,14 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { Alert, Modal, StyleSheet, Text } from 'react-native';
 import { CardForm } from '@/src/components/CardForm';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { GoldButton } from '@/src/components/GoldButton';
+import { PhotoConfirm } from '@/src/components/PhotoConfirm';
 import { useChamber } from '@/src/context/ChamberContext';
+import { frameKindFromCardType } from '@/src/lib/cardFrame';
+import { cropLibraryPhoto } from '@/src/lib/cropPhoto';
 import { emptyDraft, type CardDraft } from '@/src/models/card';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
@@ -17,6 +20,8 @@ export default function AddCardScreen() {
   const [ocrMessage, setOcrMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [reviewUri, setReviewUri] = useState<string | null>(null);
+  const [reviewBusy, setReviewBusy] = useState(false);
 
   const ingestPhoto = useCallback(async (uri: string) => {
     setDraft((current) => ({ ...current, photoUri: uri }));
@@ -49,8 +54,21 @@ export default function AddCardScreen() {
       mediaTypes: ['images'],
       quality: 0.85,
     });
-    if (!result.canceled && result.assets[0]?.uri) {
-      await ingestPhoto(result.assets[0].uri);
+    const asset = result.assets?.[0];
+    if (result.canceled || !asset?.uri) return;
+
+    setReviewBusy(true);
+    setReviewUri(asset.uri);
+    try {
+      const cropped = await cropLibraryPhoto({
+        uri: asset.uri,
+        kind: frameKindFromCardType(draft.type),
+        imageWidth: asset.width,
+        imageHeight: asset.height,
+      });
+      setReviewUri(cropped);
+    } finally {
+      setReviewBusy(false);
     }
   };
 
@@ -84,11 +102,37 @@ export default function AddCardScreen() {
           setDraft(next);
         }}
         ocrMessage={ocrMessage}
-        onCamera={() => router.push('/capture')}
+        onCamera={() =>
+          router.push({
+            pathname: '/capture',
+            params: { frame: frameKindFromCardType(draft.type) },
+          })
+        }
         onLibrary={pickLibrary}
       />
       {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
       <GoldButton label="Save" onPress={save} loading={saving} />
+      <Modal
+        visible={reviewUri != null}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setReviewUri(null)}>
+        {reviewUri ? (
+          <PhotoConfirm
+            uri={reviewUri}
+            busy={reviewBusy}
+            onUse={() => {
+              const uri = reviewUri;
+              setReviewUri(null);
+              void ingestPhoto(uri);
+            }}
+            onRetake={() => {
+              setReviewUri(null);
+              void pickLibrary();
+            }}
+          />
+        ) : null}
+      </Modal>
     </ChamberScreen>
   );
 }
