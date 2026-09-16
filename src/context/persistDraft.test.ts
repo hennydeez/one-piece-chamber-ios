@@ -60,6 +60,14 @@ describe('persistValidatedDraft', () => {
     assert.equal(card.photoUri, null);
   });
 
+  it('persists an AU purchase date as ISO', async () => {
+    const card = await persistValidatedDraft(draft({ purchaseDate: '15-09-2026' }), undefined, {
+      persistPhoto: async (uri) => uri,
+      upsert: async () => {},
+    });
+    assert.equal(card.purchaseDate, '2026-09-15');
+  });
+
   it('rejects an invalid draft before upsert', async () => {
     let upserts = 0;
     await assert.rejects(
