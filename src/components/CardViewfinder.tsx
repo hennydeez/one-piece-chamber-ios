@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   },
   dim: {
     backgroundColor: chamber.ink,
-    opacity: 0.45,
+    opacity: 0.6,
   },
   mid: {
     flexDirection: 'row',
