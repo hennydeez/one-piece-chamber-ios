@@ -4,22 +4,40 @@ Expo + React Native + TypeScript iOS app for tracking a **One Piece TCG** collec
 
 Photograph raw cards or PSA / BGS / TAG slabs, persist them in SQLite, attempt on-device OCR to prefill fields, and look up a stamped **Last-5 avg (AUD)** from completed solds that match Scout rules.
 
-This repository does **not** ship licensed One Piece artwork. The UI is an original dark “chamber” theme with a geometric vault mark.
+This repository does **not** ship licensed One Piece artwork. The UI is an original orange-and-white chamber theme with a geometric vault mark.
 
 | | |
 | --- | --- |
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.5.0` |
+| App version | `0.8.0` |
 
-## What v0.5.0 does
+## What v0.8.0 does
 
 - **Quick / Last 6 months** — Get comps still opens **Quick**: newest 5 solds + **Last-5 avg (AUD)**. No chart. Tap **Last 6 months** for Detailed.
 - **Detailed** — last 6 calendar months, newest month first. Each month: `Sep 2026`, n solds, month avg AUD, then Date | AUD | BIN/Auc | eBay (title under date when the API sent one). Empty months stay visible with n=0 / Unavailable — no invented prices.
 - **Monthly avg chart** — View bars, oldest month on the left, AUD number on each bar. Empty months are a short tick + "—".
 - **API** — Get comps sends `months=6`. Last 6 months groups those solds immediately (no second SoldComps call when rows already arrived). A wider pull can add `mode=detailed`. Same JSON array / `{ solds: [] }` shape. If Hostinger still returns ≤20, the app groups what arrived. Pagination can come later. Quota / error `sourceMessage` is shown honestly — never as live solds.
-- Playset / x4 / “lot of” / bundle titles are still dropped when present.
+- Playset / x4 / “lot of” / bundle titles are still dropped when present. Comps UI uses the orange-white chamber tokens.
+
+## What v0.7.0 does
+
+- **Orange + white theme** — paper-white screens, dark ink text, burnt-orange accents on buttons, selected chips, links, tabs, and the Get comps bar. Camera viewfinder, crop, and Look good? Use / Retake use the same tokens. `GoldButton` stays the primary button (now orange). Splash and Android background hexes match.
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy.
+
+## What v0.6.1 does
+
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy. Last-5 sold dates stay as they were.
+- **Card viewfinder** — camera hole + crop after snap, then Look good? Use / Retake. Library pick uses the same confirm. `expo-image-manipulator` stays behind a native-module check so Expo Go soft-fails.
+
+## What v0.5.0 does
+
+- **Orange + white theme** — paper-white screens, dark ink text, burnt-orange accents on buttons, selected chips, links, tabs, and the Get comps bar. Replaces the dark gold / sunken look. `GoldButton` stays the primary button (now orange). Splash and Android background hexes match. Logo art unchanged.
+
+## What v0.4.4 does
+
+- **Purchase date** — Add Card uses **dd-mm-yyyy** (e.g. 15-09-2026). “Use today’s date” fills that. Wrong shape: `Use dd-mm-yyyy.` SQLite still stores ISO `YYYY-MM-DD`. Card detail shows dd-mm-yyyy. Last-5 sold dates stay as they were.
 
 ## What v0.4.3 does
 

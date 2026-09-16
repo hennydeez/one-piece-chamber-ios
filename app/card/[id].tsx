@@ -8,7 +8,7 @@ import { CompsResults } from '@/src/components/CompsResults';
 import { GoldButton } from '@/src/components/GoldButton';
 import { useCompsLookup } from '@/src/components/useCompsLookup';
 import { useChamber } from '@/src/context/ChamberContext';
-import { formatDisplayDate } from '@/src/lib/dates';
+import { formatPurchaseDate } from '@/src/lib/dates';
 import { compsViewMessage } from '@/src/services/comps/last5Avg';
 import { formatAud } from '@/src/lib/money';
 import type { CollectionCard } from '@/src/models/card';
@@ -84,7 +84,7 @@ export default function CardDetailScreen() {
         <Row label="Cert #" value={card.certNumber ?? '—'} />
         <Row label="Print" value={card.printNote ?? '—'} />
         <Row label="Language" value={card.language} />
-        <Row label="Purchased" value={formatDisplayDate(card.purchaseDate)} />
+        <Row label="Purchased" value={formatPurchaseDate(card.purchaseDate)} />
         <Row label="Price paid" value={formatAud(card.purchasePriceAud)} />
         <Row label="Notes" value={card.notes ?? '—'} />
       </View>

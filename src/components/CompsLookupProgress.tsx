@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   track: {
     height: 12,
     borderRadius: 999,
-    backgroundColor: '#2A2314',
+    backgroundColor: chamber.goldWash,
     borderWidth: 1,
     borderColor: chamber.goldDim,
     overflow: 'hidden',

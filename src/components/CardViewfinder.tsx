@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   dim: {
-    backgroundColor: 'rgba(10, 9, 8, 0.72)',
+    backgroundColor: chamber.ink,
+    opacity: 0.6,
   },
   mid: {
     flexDirection: 'row',

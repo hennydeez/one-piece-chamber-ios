@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
   },
   cardChipOn: {
     borderColor: chamber.gold,
+    backgroundColor: chamber.goldWash,
   },
   cardChipText: {
     color: chamber.ink,
