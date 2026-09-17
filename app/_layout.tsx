@@ -41,6 +41,8 @@ export default function RootLayout() {
           }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="card/[id]" options={{ title: 'Card' }} />
+          <Stack.Screen name="edit/[id]" options={{ title: 'Edit' }} />
+          <Stack.Screen name="sales/[id]" options={{ title: 'Sales history' }} />
           <Stack.Screen
             name="capture"
             options={{ title: 'Photo', presentation: 'modal' }}

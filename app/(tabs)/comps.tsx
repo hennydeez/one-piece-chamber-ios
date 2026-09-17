@@ -1,18 +1,20 @@
 import { useMemo, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChamberMark } from '@/src/components/ChamberMark';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { ChipRow } from '@/src/components/ChipRow';
-import { Field } from '@/src/components/Field';
 import { CompsLookupProgress } from '@/src/components/CompsLookupProgress';
+import { CompsPhoto } from '@/src/components/CompsPhoto';
+import { CompsResults } from '@/src/components/CompsResults';
+import { Field } from '@/src/components/Field';
 import { GoldButton } from '@/src/components/GoldButton';
 import { GradeChips } from '@/src/components/GradeChips';
-import { Last5SoldTable } from '@/src/components/Last5SoldTable';
+import { useCompsLookup } from '@/src/components/useCompsLookup';
 import { useChamber } from '@/src/context/ChamberContext';
-import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/card';
-import type { CompQuery, CompsResult } from '@/src/models/comps';
 import { snapGradeToChips } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp, type CompLanguage } from '@/src/lib/language';
+import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/card';
+import type { CompQuery } from '@/src/models/comps';
+import { compsViewMessage } from '@/src/services/comps/last5Avg';
 import { resolveQueryPhotoUri } from '@/src/services/comps/queryPhoto';
 import { chamber } from '@/src/theme/chamber';
 
@@ -24,9 +26,8 @@ export default function CompsScreen() {
   const [type, setType] = useState<CardType>('Raw');
   const [grade, setGrade] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [result, setResult] = useState<CompsResult | null>(null);
   const [searchedPhotoUri, setSearchedPhotoUri] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { result, view, loading, runLookup, changeView, reset } = useCompsLookup(lookupComps);
 
   const query = useMemo<CompQuery>(
     () => ({
@@ -46,26 +47,26 @@ export default function CompsScreen() {
     setLanguage(compLanguageFromCode(card.language));
     setType(card.type);
     setGrade(card.type === 'Raw' ? '' : (card.grade ?? ''));
-    setResult(null);
+    reset();
     setSearchedPhotoUri(null);
   };
 
-  const runLookup = async () => {
+  const photoOptions = {
+    selectedCard: cards.find((card) => card.id === selectedId) ?? null,
+    cards,
+    draftPhotoUri: pendingPhotoUri,
+  };
+
+  const getComps = async () => {
     if (!query.cardCode) return;
-    setLoading(true);
-    setResult(null);
-    try {
-      setSearchedPhotoUri(
-        resolveQueryPhotoUri(query, {
-          selectedCard: cards.find((card) => card.id === selectedId) ?? null,
-          cards,
-          draftPhotoUri: pendingPhotoUri,
-        }),
-      );
-      setResult(await lookupComps(query));
-    } finally {
-      setLoading(false);
-    }
+    setSearchedPhotoUri(resolveQueryPhotoUri(query, photoOptions));
+    const next = await runLookup(query, 'quick');
+    setSearchedPhotoUri(
+      resolveQueryPhotoUri(query, {
+        ...photoOptions,
+        apiImageUrl: next?.imageUrl,
+      }),
+    );
   };
 
   return (
@@ -116,25 +117,27 @@ export default function CompsScreen() {
         onSelect={(next) => {
           setType(next);
           setGrade(snapGradeToChips(grade, next));
-          setResult(null);
+          reset();
           setSearchedPhotoUri(null);
         }}
       />
       <GradeChips type={type} value={grade} onChange={setGrade} />
-      <GoldButton label="Get comps" onPress={runLookup} loading={loading} disabled={!query.cardCode} />
+      <GoldButton label="Get comps" onPress={getComps} loading={loading} disabled={!query.cardCode} />
       <CompsLookupProgress loading={loading} />
 
       {result ? (
         <View style={styles.results}>
-          <View style={styles.photo}>
-            {searchedPhotoUri ? (
-              <Image source={{ uri: searchedPhotoUri }} style={styles.photoImage} />
-            ) : (
-              <ChamberMark size={72} />
-            )}
-          </View>
-          <Text style={styles.bannerText}>{result.sourceMessage}</Text>
-          <Last5SoldTable avg={result.last5} />
+          <CompsPhoto
+            uri={
+              searchedPhotoUri ??
+              resolveQueryPhotoUri(query, {
+                ...photoOptions,
+                apiImageUrl: result.imageUrl,
+              })
+            }
+          />
+          <Text style={styles.bannerText}>{compsViewMessage(result, view)}</Text>
+          <CompsResults result={result} view={view} onViewChange={(next) => void changeView(next)} />
         </View>
       ) : null}
     </ChamberScreen>
@@ -180,20 +183,6 @@ const styles = StyleSheet.create({
   },
   results: {
     gap: 12,
-  },
-  photo: {
-    height: 220,
-    borderRadius: 12,
-    backgroundColor: chamber.bgSunken,
-    borderWidth: 1,
-    borderColor: chamber.panelEdge,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  photoImage: {
-    width: '100%',
-    height: '100%',
   },
   bannerText: {
     color: chamber.goldSoft,

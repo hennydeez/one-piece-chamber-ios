@@ -1,5 +1,5 @@
 import type { CardDraft, CollectionCard } from '@/src/models/card';
-import type { CompQuery, CompsResult } from '@/src/models/comps';
+import type { CompQuery, CompsLookupOptions, CompsResult } from '@/src/models/comps';
 
 export interface ChamberContextValue {
   ready: boolean;
@@ -10,5 +10,5 @@ export interface ChamberContextValue {
   saveDraft: (draft: CardDraft, existing?: CollectionCard) => Promise<CollectionCard>;
   removeCard: (id: string) => Promise<void>;
   findCard: (id: string) => Promise<CollectionCard | null>;
-  lookupComps: (query: CompQuery) => Promise<CompsResult>;
+  lookupComps: (query: CompQuery, options?: CompsLookupOptions) => Promise<CompsResult>;
 }

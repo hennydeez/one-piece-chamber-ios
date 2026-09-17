@@ -9,7 +9,7 @@ import {
 } from '@/src/db/cardsRepo';
 import { persistCardPhoto } from '@/src/lib/photos';
 import { compsService } from '@/src/services/comps';
-import type { CompQuery } from '@/src/models/comps';
+import type { CompQuery, CompsLookupOptions } from '@/src/models/comps';
 import { ChamberContext } from './ChamberContext';
 import { persistValidatedDraft } from './persistDraft';
 
@@ -51,8 +51,8 @@ export function ChamberProvider({ children }: { children: ReactNode }) {
 
   const findCard = useCallback(async (id: string) => getCardRow(db, id), [db]);
 
-  const lookupComps = useCallback(async (query: CompQuery) => {
-    return compsService.getLastCompletedSolds(query);
+  const lookupComps = useCallback(async (query: CompQuery, options?: CompsLookupOptions) => {
+    return compsService.getLastCompletedSolds(query, options);
   }, []);
 
   const value = useMemo(

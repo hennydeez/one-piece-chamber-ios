@@ -11,7 +11,14 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.7.0` |
+| App version | `0.8.0` |
+
+## What v0.8.0 does
+
+- **Quick / Last 6 months comps** — Get comps opens **Quick** (newest 5 solds + **Last-5 avg (AUD)**). **Last 6 months** is a View chip: six calendar months, newest first, with n / month avg AUD / that month’s solds, plus a monthly avg bar chart. Empty months stay empty. Toggle is instant on the solds already returned. A second SoldComps call only runs when Quick was live n=0. Same toggle on the Comps tab and card detail.
+- **Edit saved cards** — Card detail **Edit** reuses the Add Card form and `saveDraft` storage. **Cancel** goes back with no write.
+- **Sales history** — Card detail **Sales history** loads real completed solds for that card, or an honest empty / error state. Not a dead button.
+- **Comps photo by card code** — After Get comps (Quick and Last 6 months), the card picture shows from a matching collection / draft photo, or a live `imageUrl` when the API sent one. The picture still shows when solds are empty if that URL exists. Nothing invented.
 
 ## What v0.7.0 does
 
@@ -178,12 +185,14 @@ EAS compiles in the cloud, so these commands are valid on Windows. You do not ne
 
 ```
 app/(tabs)/          Collections, Add Card, Comps
-app/card/[id].tsx    Detail
+app/card/[id].tsx    Detail (Edit + Sales history + Get comps)
+app/edit/[id].tsx    Edit saved card (same form / storage as Add Card)
+app/sales/[id].tsx   Sales history
 app/capture.tsx      expo-camera modal
 src/db/              SQLite schema + repository
 src/models/          Card + comps types
 src/services/ocr/    OCR interface + parser
-src/services/comps/  CompsService, Scout match, Last-5 avg
+src/services/comps/  CompsService, Scout match, Last-5 avg, last-6-month buckets
 ```
 
 ## Honesty rules

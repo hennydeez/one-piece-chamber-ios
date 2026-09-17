@@ -1,11 +1,36 @@
-import type { CompQuery, CompSold, CompsResult, CompsSourceStatus, Last5Avg, SaleChannel } from '../../models/comps';
+import type {
+  CompQuery,
+  CompSold,
+  CompsLookupMode,
+  CompsResult,
+  CompsSourceStatus,
+  Last5Avg,
+  SaleChannel,
+} from '../../models/comps';
 import { mean } from '../../lib/money';
+import { firstSoldImageUrl } from './imageUrl';
+import { bucketSoldsByMonth } from './monthBuckets';
 import { withoutNoiseTitles } from './noiseTitle';
 import { filterMatchingSolds } from './scoutMatch';
 import { isSampleSold } from './sourceLink';
 
 export const LAST5_AVG_LABEL = 'Last-5 avg (AUD)' as const;
 export const LAST5_MAX = 5;
+export const QUICK_SOURCE_MESSAGE = 'Live solds. Newest 5.';
+export const DETAILED_SOURCE_MESSAGE = 'Live solds. Last 6 months.';
+
+export function compsViewMessage(result: CompsResult, view: CompsLookupMode): string {
+  if (view === 'detailed' && result.sourceStatus === 'live') return DETAILED_SOURCE_MESSAGE;
+  return result.sourceMessage;
+}
+
+/** Last 6 months uses solds already on the result. Only refetch when live n=0. */
+export function shouldRefetchDetailed(result: CompsResult | null): boolean {
+  if (!result) return false;
+  if (result.lookupMode === 'detailed') return false;
+  if (result.solds.length > 0) return false;
+  return result.sourceStatus === 'live';
+}
 
 function byNewest(a: CompSold, b: CompSold): number {
   return new Date(b.soldAt).getTime() - new Date(a.soldAt).getTime();
@@ -46,6 +71,11 @@ export function selectMergedLast5(solds: CompSold[]): CompSold[] {
   return liveEligible(solds).sort(byNewest).slice(0, LAST5_MAX);
 }
 
+/** Matching live solds, newest first. No cap — Detailed groups these into months. */
+export function selectLiveSolds(solds: CompSold[]): CompSold[] {
+  return liveEligible(solds).sort(byNewest);
+}
+
 export function honestCountLabel(n: number, maxN = LAST5_MAX): string {
   return `n=${n} of ${maxN}`;
 }
@@ -81,13 +111,20 @@ export function buildCompsResult(
   sourceStatus: CompsSourceStatus,
   sourceMessage: string,
   fetchedAt = new Date().toISOString(),
+  lookupMode: CompsLookupMode = 'quick',
+  imageUrl: string | null = null,
 ): CompsResult {
   const matched = filterMatchingSolds(solds, query);
+  const live = selectLiveSolds(matched);
   return {
     query,
     last5: stampMergedLast5Avg(matched),
     fixed: stampLast5Avg(matched, 'fixed'),
     auction: stampLast5Avg(matched, 'auction'),
+    solds: live,
+    months: bucketSoldsByMonth(live, new Date(fetchedAt)),
+    lookupMode,
+    imageUrl: imageUrl ?? firstSoldImageUrl(matched) ?? firstSoldImageUrl(solds),
     sourceStatus,
     sourceMessage,
     fetchedAt,
@@ -98,6 +135,8 @@ export function emptyCompsResult(
   query: CompQuery,
   sourceStatus: CompsSourceStatus,
   sourceMessage: string,
+  lookupMode: CompsLookupMode = 'quick',
+  imageUrl: string | null = null,
 ): CompsResult {
-  return buildCompsResult(query, [], sourceStatus, sourceMessage);
+  return buildCompsResult(query, [], sourceStatus, sourceMessage, undefined, lookupMode, imageUrl);
 }
