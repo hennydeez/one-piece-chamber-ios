@@ -1,4 +1,4 @@
-import type { CompQuery, CompsResult, CompsService } from '../../models/comps';
+import type { CompQuery, CompsLookupOptions, CompsResult, CompsService } from '../../models/comps';
 import { emptyCompsResult } from './last5Avg';
 
 export const UNCONFIGURED_COMPS_MESSAGE = 'No comps source set.';
@@ -8,7 +8,12 @@ export const UNCONFIGURED_COMPS_MESSAGE = 'No comps source set.';
  * Returns n=0. Never invents solds or sample prices.
  */
 export class UnconfiguredCompsService implements CompsService {
-  async getLastCompletedSolds(query: CompQuery): Promise<CompsResult> {
-    return emptyCompsResult(query, 'unconfigured', UNCONFIGURED_COMPS_MESSAGE);
+  async getLastCompletedSolds(query: CompQuery, options?: CompsLookupOptions): Promise<CompsResult> {
+    return emptyCompsResult(
+      query,
+      'unconfigured',
+      UNCONFIGURED_COMPS_MESSAGE,
+      options?.mode === 'detailed' ? 'detailed' : 'quick',
+    );
   }
 }

@@ -4,13 +4,14 @@ import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import { ChamberMark } from '@/src/components/ChamberMark';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { CompsLookupProgress } from '@/src/components/CompsLookupProgress';
+import { CompsResults } from '@/src/components/CompsResults';
 import { GoldButton } from '@/src/components/GoldButton';
-import { Last5SoldTable } from '@/src/components/Last5SoldTable';
+import { useCompsLookup } from '@/src/components/useCompsLookup';
 import { useChamber } from '@/src/context/ChamberContext';
 import { formatPurchaseDate } from '@/src/lib/dates';
+import { compsViewMessage } from '@/src/services/comps/last5Avg';
 import { formatAud } from '@/src/lib/money';
 import type { CollectionCard } from '@/src/models/card';
-import type { CompsResult } from '@/src/models/comps';
 import { chamber } from '@/src/theme/chamber';
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -26,8 +27,7 @@ export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { findCard, removeCard, lookupComps } = useChamber();
   const [card, setCard] = useState<CollectionCard | null>(null);
-  const [comps, setComps] = useState<CompsResult | null>(null);
-  const [loadingComps, setLoadingComps] = useState(false);
+  const { result: comps, view, loading: loadingComps, runLookup, changeView } = useCompsLookup(lookupComps);
 
   useEffect(() => {
     if (!id) return;
@@ -57,21 +57,16 @@ export default function CardDetailScreen() {
   };
 
   const loadComps = async () => {
-    setLoadingComps(true);
-    setComps(null);
-    try {
-      setComps(
-        await lookupComps({
-          cardCode: card.cardCode,
-          printNote: card.printNote,
-          language: card.language,
-          type: card.type,
-          grade: card.grade,
-        }),
-      );
-    } finally {
-      setLoadingComps(false);
-    }
+    await runLookup(
+      {
+        cardCode: card.cardCode,
+        printNote: card.printNote,
+        language: card.language,
+        type: card.type,
+        grade: card.grade,
+      },
+      'quick',
+    );
   };
 
   return (
@@ -97,8 +92,8 @@ export default function CardDetailScreen() {
       <CompsLookupProgress loading={loadingComps} />
       {comps ? (
         <View style={styles.comps}>
-          <Text style={styles.banner}>{comps.sourceMessage}</Text>
-          <Last5SoldTable avg={comps.last5} />
+          <Text style={styles.banner}>{compsViewMessage(comps, view)}</Text>
+          <CompsResults result={comps} view={view} onViewChange={(next) => void changeView(next)} />
         </View>
       ) : null}
       <GoldButton label="Delete" tone="danger" onPress={confirmDelete} />

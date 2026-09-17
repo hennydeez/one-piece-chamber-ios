@@ -11,7 +11,15 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.7.0` |
+| App version | `0.8.0` |
+
+## What v0.8.0 does
+
+- **Quick / Last 6 months** — Get comps still opens **Quick**: newest 5 solds + **Last-5 avg (AUD)**. No chart. Tap **Last 6 months** for Detailed.
+- **Detailed** — last 6 calendar months, newest month first. Each month: `Sep 2026`, n solds, month avg AUD, then Date | AUD | BIN/Auc | eBay (title under date when the API sent one). Empty months stay visible with n=0 / Unavailable — no invented prices.
+- **Monthly avg chart** — View bars, oldest month on the left, AUD number on each bar. Empty months are a short tick + "—".
+- **API** — Get comps sends `months=6`. Last 6 months groups those solds immediately (no second SoldComps call when rows already arrived). A wider pull can add `mode=detailed`. Same JSON array / `{ solds: [] }` shape. If Hostinger still returns ≤20, the app groups what arrived. Pagination can come later. Quota / error `sourceMessage` is shown honestly — never as live solds.
+- Playset / x4 / “lot of” / bundle titles are still dropped when present. Comps UI uses the orange-white chamber tokens.
 
 ## What v0.7.0 does
 
@@ -65,7 +73,7 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 
 ### Scout match (code, not UI)
 
-Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first, max 5, BIN + auction merged. AUD or FX-stamped conversions only. Playset / x4 / “lot of” / bundle titles are dropped when present.
+Completed solds only. Match is code + print + language + grade. Raw is never a slab. Newest first. Quick shows max 5. Detailed groups matching solds into the last 6 calendar months. BIN + auction merged. AUD or FX-stamped conversions only. Playset / x4 / “lot of” / bundle titles are dropped when present.
 
 **Live solds:** Chamber `comps.php` is the baked-in default (also in `.env.example` and `eas.json`):
 
@@ -183,14 +191,14 @@ app/capture.tsx      expo-camera modal
 src/db/              SQLite schema + repository
 src/models/          Card + comps types
 src/services/ocr/    OCR interface + parser
-src/services/comps/  CompsService, Scout match, Last-5 avg
+src/services/comps/  CompsService, Scout match, Last-5 avg, last-6-month buckets
 ```
 
 ## Honesty rules
 
 - OCR messages say it missed, needs a full build, or to check the fields. Prefill is never treated as confirmed.
 - Comps use the baked-in Chamber `comps.php` URL unless you override `EXPO_PUBLIC_COMPS_API_URL`. No sample prices. No leftover stub / `example.invalid` rows. Timeout is `Comps took too long. Try again.` — never fake solds.
-- **Last-5 avg (AUD)** is `Unavailable` when `n=0`.
+- **Last-5 avg (AUD)** is `Unavailable` when `n=0`. Empty Detailed months are n=0 / Unavailable / "—" on the chart — never a fake sold.
 - No ripped One Piece IP art is included.
 
 ## License
