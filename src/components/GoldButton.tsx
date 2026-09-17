@@ -23,7 +23,7 @@ export function GoldButton({ label, onPress, disabled, loading, tone = 'gold' }:
         (disabled || loading) && styles.disabled,
         pressed && styles.pressed,
       ]}>
-      {loading ? <ActivityIndicator color={chamber.bg} /> : <Text style={[styles.text, tone !== 'gold' && styles.textGhost]}>{label}</Text>}
+      {loading ? <ActivityIndicator color={chamber.onGold} /> : <Text style={[styles.text, tone !== 'gold' && styles.textGhost]}>{label}</Text>}
     </Pressable>
   );
 }
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   text: {
-    color: chamber.bg,
+    color: chamber.onGold,
     fontWeight: '800',
     letterSpacing: 0.4,
     fontSize: 15,
