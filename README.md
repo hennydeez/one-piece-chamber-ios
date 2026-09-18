@@ -11,7 +11,12 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.9.0` |
+| App version | `0.9.1` |
+
+## What v0.9.1 does
+
+- **Version on the tab bar** — `v0.9.1` sits on the bottom menu so Expo Go always shows it. The header still has it too. Reads `app.json` via `Constants.expoConfig`, and falls back to a baked-in `0.9.1` (never Expo Go’s host version).
+- **Print-note image filter** — on Add Card with no photo, a print note such as `cs 25-26 event pack` with `OP06-101` narrows to that catalog printing. If more than one print matches, pick from thumbs + labels, then **Use** / **Cancel**. The picture is applied only after Use. Raw vs slab is unchanged. No invented URLs or solds.
 
 ## What v0.9.0 does
 

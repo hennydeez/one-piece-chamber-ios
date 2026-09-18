@@ -1,18 +1,20 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { ChamberTabBar } from '@/src/components/ChamberTabBar';
 import { chamber } from '@/src/theme/chamber';
 
 export default function TabLayout() {
   return (
     <Tabs
+      tabBar={(props) => <ChamberTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: chamber.gold,
         tabBarInactiveTintColor: chamber.faint,
         tabBarStyle: {
           backgroundColor: chamber.bgElevated,
-          borderTopColor: chamber.gold,
-          borderTopWidth: 1.5,
+          borderTopColor: chamber.panelEdge,
+          borderTopWidth: 0,
         },
         headerStyle: { backgroundColor: chamber.bgElevated },
         headerTintColor: chamber.goldSoft,
