@@ -89,6 +89,9 @@ describe('resolveQueryPhotoUri', () => {
       resolveQueryPhotoUri(query, { apiImageUrl: 'https://cdn.example/empty-solds.jpg' }),
       'https://cdn.example/empty-solds.jpg',
     );
+  });
+
+  it('returns null when nothing has a photo — still no invented solds', () => {
     assert.equal(resolveQueryPhotoUri(query, { cards: [card({ id: 'bare' })] }), null);
   });
 });

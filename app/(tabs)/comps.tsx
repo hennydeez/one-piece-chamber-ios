@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardChip: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     borderRadius: 999,
     paddingHorizontal: 14,

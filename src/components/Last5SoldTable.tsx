@@ -22,8 +22,8 @@ export function Last5SoldTable({ avg }: { avg: Last5Avg }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: chamber.panel,
-    borderWidth: 1,
-    borderColor: chamber.goldDim,
+    borderWidth: 1.5,
+    borderColor: chamber.gold,
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingTop: 12,

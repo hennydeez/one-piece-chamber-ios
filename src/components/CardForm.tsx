@@ -14,11 +14,21 @@ interface Props {
   draft: CardDraft;
   onChange: (next: CardDraft) => void;
   ocrMessage?: string | null;
+  photoHint?: string | null;
+  photoBusy?: boolean;
   onCamera: () => void;
   onLibrary: () => void;
 }
 
-export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: Props) {
+export function CardForm({
+  draft,
+  onChange,
+  ocrMessage,
+  photoHint,
+  photoBusy,
+  onCamera,
+  onLibrary,
+}: Props) {
   const set = <K extends keyof CardDraft>(key: K, value: CardDraft[K]) => {
     onChange({ ...draft, [key]: value });
   };
@@ -27,11 +37,13 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
     <View style={styles.form}>
       <View style={styles.photoBlock}>
         {draft.photoUri ? (
-          <Image source={{ uri: draft.photoUri }} style={styles.photo} />
+          <Image source={{ uri: draft.photoUri }} style={styles.photo} resizeMode="contain" />
         ) : (
           <View style={styles.placeholder}>
             <ChamberMark size={64} />
-            <Text style={styles.placeholderText}>Raw card or slab</Text>
+            <Text style={styles.placeholderText}>
+              {photoBusy ? 'Looking up…' : 'Photo or look up by code'}
+            </Text>
           </View>
         )}
         <View style={styles.photoActions}>
@@ -42,6 +54,7 @@ export function CardForm({ draft, onChange, ocrMessage, onCamera, onLibrary }: P
             <GoldButton label="Library" onPress={onLibrary} tone="ghost" />
           </View>
         </View>
+        {photoHint ? <Text style={styles.photoHint}>{photoHint}</Text> : null}
         {ocrMessage ? <Text style={styles.ocr}>{ocrMessage}</Text> : null}
       </View>
 
@@ -127,14 +140,16 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: '100%',
-    height: 220,
+    height: 280,
     borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: chamber.panelEdge,
     backgroundColor: chamber.bgSunken,
   },
   placeholder: {
     height: 180,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     backgroundColor: chamber.bgSunken,
     alignItems: 'center',
@@ -151,6 +166,11 @@ const styles = StyleSheet.create({
   },
   photoBtn: {
     flex: 1,
+  },
+  photoHint: {
+    color: chamber.muted,
+    fontSize: 13,
+    lineHeight: 18,
   },
   ocr: {
     color: chamber.goldSoft,

@@ -16,7 +16,7 @@ export function CardTile({ card, onPress }: { card: CollectionCard; onPress: () 
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tile, pressed && styles.pressed]}>
       <View style={styles.photo}>
         {card.photoUri ? (
-          <Image source={{ uri: card.photoUri }} style={styles.image} />
+          <Image source={{ uri: card.photoUri }} style={styles.image} resizeMode="contain" />
         ) : (
           <ChamberMark size={56} />
         )}
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: chamber.panel,
     borderColor: chamber.panelEdge,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderRadius: 14,
     padding: 10,
     minHeight: 196,
@@ -49,6 +49,8 @@ const styles = StyleSheet.create({
   photo: {
     height: 120,
     borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: chamber.goldDim,
     backgroundColor: chamber.bgSunken,
     alignItems: 'center',
     justifyContent: 'center',

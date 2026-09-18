@@ -1,11 +1,12 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Modal, StyleSheet, Text } from 'react-native';
 import { useChamber } from '@/src/context/ChamberContext';
 import { frameKindFromCardType } from '@/src/lib/cardFrame';
 import { cropLibraryPhoto } from '@/src/lib/cropPhoto';
 import { draftFromCard, emptyDraft, type CardDraft, type CollectionCard } from '@/src/models/card';
+import { isOpCardCode, lookupCardImage } from '@/src/services/comps/lookupCardImage';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
 import { chamber } from '@/src/theme/chamber';
@@ -34,12 +35,18 @@ export function CardDraftEditor({
   const { saveDraft, pendingPhotoUri, setPendingPhotoUri } = useChamber();
   const [draft, setDraft] = useState<CardDraft>(() => (existing ? draftFromCard(existing) : emptyDraft()));
   const [ocrMessage, setOcrMessage] = useState<string | null>(null);
+  const [photoHint, setPhotoHint] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [reviewUri, setReviewUri] = useState<string | null>(null);
   const [reviewBusy, setReviewBusy] = useState(false);
+  const userPhotoRef = useRef(Boolean(existing?.photoUri));
 
   const ingestPhoto = useCallback(async (uri: string) => {
+    userPhotoRef.current = true;
+    setPhotoHint(null);
+    setPhotoBusy(false);
     setDraft((current) => ({ ...current, photoUri: uri }));
     setOcrMessage('Reading…');
     try {
@@ -88,13 +95,62 @@ export function CardDraftEditor({
     }
   };
 
+  useEffect(() => {
+    if (userPhotoRef.current) return;
+    const cardCode = draft.cardCode.trim();
+    if (!isOpCardCode(cardCode)) {
+      setPhotoHint(null);
+      setPhotoBusy(false);
+      setDraft((current) => (current.photoUri ? { ...current, photoUri: null } : current));
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        setPhotoBusy(true);
+        setDraft((current) => (current.photoUri ? { ...current, photoUri: null } : current));
+        const found = await lookupCardImage({
+          cardCode,
+          type: draft.type,
+          grade: draft.grade,
+          language: draft.language,
+          printNote: draft.printNote,
+        });
+        if (cancelled || userPhotoRef.current) return;
+        setPhotoHint(found.message);
+        setDraft((current) => ({ ...current, photoUri: found.imageUrl }));
+        setPhotoBusy(false);
+      })();
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [draft.cardCode, draft.type, draft.grade, draft.language, draft.printNote]);
+
   const save = async () => {
     setSaving(true);
     setSaveError(null);
     try {
-      const card = await saveDraft(draft, existing);
+      let toSave = draft;
+      if (!userPhotoRef.current) {
+        const found = await lookupCardImage({
+          cardCode: draft.cardCode,
+          type: draft.type,
+          grade: draft.grade,
+          language: draft.language,
+          printNote: draft.printNote,
+        });
+        setPhotoHint(found.message);
+        toSave = { ...draft, photoUri: found.imageUrl };
+      }
+      const card = await saveDraft(toSave, existing);
       if (!existing) {
         setDraft(emptyDraft());
+        userPhotoRef.current = false;
+        setPhotoHint(null);
         setOcrMessage(null);
       }
       onSaved(card);
@@ -116,6 +172,8 @@ export function CardDraftEditor({
           setDraft(next);
         }}
         ocrMessage={ocrMessage}
+        photoHint={photoHint}
+        photoBusy={photoBusy}
         onCamera={() =>
           router.push({
             pathname: '/capture',

@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
-import { chamber } from '@/src/theme/chamber';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { chamber } from '@/src/theme/chamber';
 
 export default function TabLayout() {
   return (
@@ -11,7 +11,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: chamber.faint,
         tabBarStyle: {
           backgroundColor: chamber.bgElevated,
-          borderTopColor: chamber.panelEdge,
+          borderTopColor: chamber.gold,
+          borderTopWidth: 1.5,
         },
         headerStyle: { backgroundColor: chamber.bgElevated },
         headerTintColor: chamber.goldSoft,

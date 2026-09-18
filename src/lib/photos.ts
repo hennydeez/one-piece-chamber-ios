@@ -38,6 +38,8 @@ export async function persistCardPhoto(
   runtime: PhotoPersistRuntime = defaultPhotoPersistRuntime(),
 ): Promise<string> {
   if (!sourceUri) return sourceUri;
+  // Remote catalog / comps photos stay as https — do not invent a local copy.
+  if (/^https?:\/\//i.test(sourceUri)) return sourceUri;
   try {
     const fs = runtime.getLegacyFileSystem();
     const documentDirectory = fs?.documentDirectory;

@@ -5,7 +5,7 @@ export default function AddCardScreen() {
   return (
     <CardDraftEditor
       title="Add Card"
-      subtitle="Snap or pick a photo. Fix the fields if OCR misses."
+      subtitle="Snap a photo, or type a code to find card art."
       saveLabel="Save"
       onSaved={(card) => {
         try {

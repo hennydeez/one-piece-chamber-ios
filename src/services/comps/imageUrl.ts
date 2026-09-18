@@ -34,7 +34,10 @@ export function firstSoldImageUrl(solds: Array<Pick<CompSold, 'imageUrl'>>): str
  * Photo for a comps payload. Top-level imageUrl wins, then any row that
  * carried one — even when those rows are not valid solds.
  */
-export function imageUrlFromPayload(payload: unknown, solds: Array<Pick<CompSold, 'imageUrl'>> = []): string | null {
+export function imageUrlFromPayload(
+  payload: unknown,
+  solds: Array<Pick<CompSold, 'imageUrl'>> = [],
+): string | null {
   if (Array.isArray(payload)) {
     for (const row of payload) {
       if (row && typeof row === 'object') {

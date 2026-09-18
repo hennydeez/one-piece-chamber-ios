@@ -11,7 +11,15 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.8.0` |
+| App version | `0.9.0` |
+
+## What v0.9.0 does
+
+- **Version in the header** — `v0.9.0` sits quietly next to **ONE PIECE CHAMBER**. It comes from `app.json` via `Constants.expoConfig`.
+- **Add Card without a photo** — type an OP code (e.g. `OP01-001`). Chamber looks up a real picture:
+  - **Raw** uses confirmed card art from [Limitless TCG](https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/) (`{set}/{code}_{EN|JP}.webp`), then the official Bandai card list (`en.onepiece-cardgame.com/images/cardlist/card/{code}.png`).
+  - **PSA / BGS / TAG** prefer a graded listing photo when Chamber `comps.php` sends a real `imageUrl`. If it does not, the form says **No slab photo — using card art.** and uses the raw catalog image, or **No photo for this code.** Nothing is invented. URLs are confirmed with HEAD/GET (`image/*`) before they are shown.
+- **Brighter orange** — same orange + white chamber look, louder orange on buttons, chips, and section edges. Cards, fields, and chips use a clearer orange border.
 
 ## What v0.8.0 does
 
@@ -200,7 +208,8 @@ src/services/comps/  CompsService, Scout match, Last-5 avg, last-6-month buckets
 - OCR messages say it missed, needs a full build, or to check the fields. Prefill is never treated as confirmed.
 - Comps use the baked-in Chamber `comps.php` URL unless you override `EXPO_PUBLIC_COMPS_API_URL`. No sample prices. No leftover stub / `example.invalid` rows. Timeout is `Comps took too long. Try again.` — never fake solds.
 - **Last-5 avg (AUD)** is `Unavailable` when `n=0`.
-- No ripped One Piece IP art is included.
+- No ripped One Piece IP art is bundled. Add Card without a photo may show a **confirmed** public catalog or `comps.php` `imageUrl`. No invented URLs, solds, or prices.
+
 
 ## License
 

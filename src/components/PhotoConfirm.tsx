@@ -43,6 +43,8 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 10,
     backgroundColor: chamber.bgElevated,
+    borderTopWidth: 1.5,
+    borderTopColor: chamber.panelEdge,
   },
   hint: {
     color: chamber.muted,

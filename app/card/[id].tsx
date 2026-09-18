@@ -84,7 +84,7 @@ export default function CardDetailScreen() {
 
   return (
     <ChamberScreen title={card.cardCode} subtitle={`${card.type}${card.grade ? ` ${card.grade}` : ''} · ${card.language}`}>
-      <CompsPhoto uri={card.photoUri} height={260} />
+      <CompsPhoto uri={card.photoUri} height={320} />
       <View style={styles.sheet}>
         <Row label="Type" value={card.type} />
         <Row label="Grade" value={card.grade ?? '—'} />
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: chamber.panel,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     padding: 12,
   },

@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     backgroundColor: chamber.bgSunken,
     paddingHorizontal: 16,

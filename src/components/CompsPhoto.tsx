@@ -5,7 +5,7 @@ import { ChamberMark } from './ChamberMark';
 export function CompsPhoto({ uri, height = 220 }: { uri: string | null; height?: number }) {
   return (
     <View style={[styles.photo, { height }]}>
-      {uri ? <Image source={{ uri }} style={styles.photoImage} /> : <ChamberMark size={72} />}
+      {uri ? <Image source={{ uri }} style={styles.photoImage} resizeMode="contain" /> : <ChamberMark size={72} />}
     </View>
   );
 }
@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   photo: {
     borderRadius: 12,
     backgroundColor: chamber.bgSunken,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     alignItems: 'center',
     justifyContent: 'center',

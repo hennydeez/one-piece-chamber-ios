@@ -38,15 +38,17 @@ const styles = StyleSheet.create({
   },
   gold: {
     backgroundColor: chamber.gold,
+    borderWidth: 1.5,
+    borderColor: chamber.gold,
   },
   ghost: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: chamber.panelEdge,
+    backgroundColor: chamber.goldWash,
+    borderWidth: 1.5,
+    borderColor: chamber.gold,
   },
   danger: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.danger,
   },
   disabled: {

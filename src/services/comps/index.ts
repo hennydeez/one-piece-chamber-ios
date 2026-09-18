@@ -36,8 +36,19 @@ export {
   resolveSourceLabel,
   resolveSourceUrl,
 } from './sourceLink';
-export { firstSoldImageUrl, imageUrlFromPayload, readImageUrl } from './imageUrl';
 export { cardMatchesCompQuery, resolveQueryPhotoUri } from './queryPhoto';
+export {
+  firstSoldImageUrl,
+  imageUrlFromPayload,
+  readImageUrl,
+} from './imageUrl';
+export {
+  catalogRawImageCandidates,
+  confirmImageUrl,
+  isOpCardCode,
+  lookupCardImage,
+  parseOpCardCode,
+} from './lookupCardImage';
 
 /** Public Chamber comps.php. Baked in so Expo Go works without eas.json / .env. */
 export const DEFAULT_COMPS_API_URL =
