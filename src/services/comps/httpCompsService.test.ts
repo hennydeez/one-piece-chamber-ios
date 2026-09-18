@@ -83,6 +83,24 @@ describe('asCompletedSold source fields', () => {
     assert.equal(sold.sourceLabel, 'eBay sold listing');
   });
 
+  it('reads optional imageUrl and ignores blanks', () => {
+    const sold = asCompletedSold({
+      ...base,
+      sourceUrl: 'https://www.ebay.com/itm/123',
+      imageUrl: ' https://cdn.example/op01-001.jpg ',
+    });
+    assert.ok(sold);
+    assert.equal(sold.imageUrl, 'https://cdn.example/op01-001.jpg');
+    assert.equal(
+      asCompletedSold({
+        ...base,
+        sourceUrl: 'https://www.ebay.com/itm/123',
+        imageUrl: 'OP01-001',
+      })?.imageUrl,
+      undefined,
+    );
+  });
+
   it('falls back from listingUrl to sourceUrl', () => {
     const sold = asCompletedSold({
       ...base,

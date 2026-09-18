@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Modal, StyleSheet, Text } from 'react-native';
 import { CardForm } from '@/src/components/CardForm';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
@@ -10,6 +10,7 @@ import { useChamber } from '@/src/context/ChamberContext';
 import { frameKindFromCardType } from '@/src/lib/cardFrame';
 import { cropLibraryPhoto } from '@/src/lib/cropPhoto';
 import { emptyDraft, type CardDraft } from '@/src/models/card';
+import { isOpCardCode, lookupCardImage } from '@/src/services/comps/lookupCardImage';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
 import { chamber } from '@/src/theme/chamber';
@@ -18,12 +19,18 @@ export default function AddCardScreen() {
   const { saveDraft, pendingPhotoUri, setPendingPhotoUri } = useChamber();
   const [draft, setDraft] = useState<CardDraft>(emptyDraft());
   const [ocrMessage, setOcrMessage] = useState<string | null>(null);
+  const [photoHint, setPhotoHint] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [reviewUri, setReviewUri] = useState<string | null>(null);
   const [reviewBusy, setReviewBusy] = useState(false);
+  const userPhotoRef = useRef(false);
 
   const ingestPhoto = useCallback(async (uri: string) => {
+    userPhotoRef.current = true;
+    setPhotoHint(null);
+    setPhotoBusy(false);
     setDraft((current) => ({ ...current, photoUri: uri }));
     setOcrMessage('Reading…');
     try {
@@ -72,12 +79,61 @@ export default function AddCardScreen() {
     }
   };
 
+  useEffect(() => {
+    if (userPhotoRef.current) return;
+    const cardCode = draft.cardCode.trim();
+    if (!isOpCardCode(cardCode)) {
+      setPhotoHint(null);
+      setPhotoBusy(false);
+      setDraft((current) => (current.photoUri ? { ...current, photoUri: null } : current));
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        setPhotoBusy(true);
+        setDraft((current) => (current.photoUri ? { ...current, photoUri: null } : current));
+        const found = await lookupCardImage({
+          cardCode,
+          type: draft.type,
+          grade: draft.grade,
+          language: draft.language,
+          printNote: draft.printNote,
+        });
+        if (cancelled || userPhotoRef.current) return;
+        setPhotoHint(found.message);
+        setDraft((current) => ({ ...current, photoUri: found.imageUrl }));
+        setPhotoBusy(false);
+      })();
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [draft.cardCode, draft.type, draft.grade, draft.language, draft.printNote]);
+
   const save = async () => {
     setSaving(true);
     setSaveError(null);
     try {
-      const card = await saveDraft(draft);
+      let toSave = draft;
+      if (!userPhotoRef.current) {
+        const found = await lookupCardImage({
+          cardCode: draft.cardCode,
+          type: draft.type,
+          grade: draft.grade,
+          language: draft.language,
+          printNote: draft.printNote,
+        });
+        setPhotoHint(found.message);
+        toSave = { ...draft, photoUri: found.imageUrl };
+      }
+      const card = await saveDraft(toSave);
       setDraft(emptyDraft());
+      userPhotoRef.current = false;
+      setPhotoHint(null);
       setOcrMessage(null);
       try {
         router.push(`/card/${card.id}`);
@@ -94,7 +150,7 @@ export default function AddCardScreen() {
   };
 
   return (
-    <ChamberScreen title="Add Card" subtitle="Snap or pick a photo. Fix the fields if OCR misses.">
+    <ChamberScreen title="Add Card" subtitle="Snap a photo, or type a code to find card art.">
       <CardForm
         draft={draft}
         onChange={(next) => {
@@ -102,6 +158,8 @@ export default function AddCardScreen() {
           setDraft(next);
         }}
         ocrMessage={ocrMessage}
+        photoHint={photoHint}
+        photoBusy={photoBusy}
         onCamera={() =>
           router.push({
             pathname: '/capture',

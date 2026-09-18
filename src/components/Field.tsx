@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: chamber.bgSunken,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     color: chamber.ink,
     borderRadius: 10,

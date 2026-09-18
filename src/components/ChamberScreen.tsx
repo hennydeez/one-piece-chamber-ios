@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { appVersionLabel } from '@/src/lib/appVersion';
 import { chamber } from '@/src/theme/chamber';
 
 interface Props {
@@ -23,7 +24,10 @@ export function ChamberScreen({ title, subtitle, children, scroll = true, footer
   return (
     <SafeAreaView style={styles.safe} edges={['left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.kicker}>ONE PIECE CHAMBER</Text>
+        <View style={styles.kickerRow}>
+          <Text style={styles.kicker}>ONE PIECE CHAMBER</Text>
+          <Text style={styles.version}>{appVersionLabel()}</Text>
+        </View>
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
@@ -42,15 +46,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: 1.5,
     borderBottomColor: chamber.panelEdge,
+    backgroundColor: chamber.bgElevated,
+  },
+  kickerRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 6,
   },
   kicker: {
     color: chamber.gold,
     fontSize: 11,
     letterSpacing: 2.4,
     fontWeight: '700',
-    marginBottom: 6,
+  },
+  version: {
+    color: chamber.faint,
+    fontSize: 11,
+    fontWeight: '600',
   },
   title: {
     color: chamber.ink,

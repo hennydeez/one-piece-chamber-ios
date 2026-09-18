@@ -32,6 +32,8 @@ export interface CompSold {
   sourceLabel?: string;
   /** Listing title from the live API. Optional — never invented client-side. */
   title?: string;
+  /** Card / listing photo from the live API. Optional — never invented client-side. */
+  imageUrl?: string;
   /** @deprecated Prefer sourceUrl. Accepted from live payloads as a fallback. */
   listingUrl?: string;
 }

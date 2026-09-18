@@ -2,9 +2,11 @@ import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Text } from 'react-native';
 import 'react-native-reanimated';
 
 import { RootProviders } from '@/src/providers/RootProviders';
+import { appVersionLabel } from '@/src/lib/appVersion';
 import { chamber, chamberTheme } from '@/src/theme/chamber';
 
 export { ErrorBoundary } from 'expo-router';
@@ -37,6 +39,11 @@ export default function RootLayout() {
             headerStyle: { backgroundColor: chamber.bgElevated },
             headerTintColor: chamber.goldSoft,
             headerTitleStyle: { color: chamber.ink, fontWeight: '700' },
+            headerRight: () => (
+              <Text style={{ color: chamber.faint, fontSize: 12, fontWeight: '600', marginRight: 16 }}>
+                {appVersionLabel()}
+              </Text>
+            ),
             contentStyle: { backgroundColor: chamber.bg },
           }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

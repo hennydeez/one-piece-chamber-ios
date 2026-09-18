@@ -88,4 +88,23 @@ describe('persistCardPhoto', () => {
   it('returns an empty source unchanged', async () => {
     assert.equal(await persistCardPhoto('', runtime()), '');
   });
+
+  it('keeps a remote catalog URL and does not copy it', async () => {
+    let copied = false;
+    const remote = 'https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/OP01/OP01-001_EN.webp';
+    const uri = await persistCardPhoto(
+      remote,
+      runtime({
+        getLegacyFileSystem: () => ({
+          documentDirectory: 'file:///documents/',
+          makeDirectoryAsync: async () => undefined,
+          copyAsync: async () => {
+            copied = true;
+          },
+        }),
+      }),
+    );
+    assert.equal(uri, remote);
+    assert.equal(copied, false);
+  });
 });

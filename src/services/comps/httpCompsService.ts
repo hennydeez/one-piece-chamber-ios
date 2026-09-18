@@ -1,4 +1,5 @@
 import type { CompQuery, CompSold, CompsService, CompsResult } from '../../models/comps';
+import { readImageUrl } from './imageUrl';
 import { buildCompsResult, emptyCompsResult } from './last5Avg';
 import { isSampleSold } from './sourceLink';
 
@@ -21,6 +22,7 @@ function asCompletedSold(value: unknown): CompSold | null {
         ? row.listingUrl.trim()
         : '';
   const title = typeof row.title === 'string' && row.title.trim() ? row.title.trim() : undefined;
+  const imageUrl = readImageUrl(row.imageUrl) ?? readImageUrl(row.image_url) ?? undefined;
   const sold: CompSold = {
     id: row.id,
     cardCode: row.cardCode,
@@ -40,6 +42,7 @@ function asCompletedSold(value: unknown): CompSold | null {
     sourceUrl,
     sourceLabel: typeof row.sourceLabel === 'string' ? row.sourceLabel : undefined,
     title,
+    imageUrl,
     listingUrl: typeof row.listingUrl === 'string' ? row.listingUrl : undefined,
   };
   if (isSampleSold(sold)) return null;

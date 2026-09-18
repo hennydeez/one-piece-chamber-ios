@@ -13,6 +13,7 @@ import { CARD_TYPES, type CardType, type CollectionCard } from '@/src/models/car
 import type { CompQuery, CompsResult } from '@/src/models/comps';
 import { snapGradeToChips } from '@/src/lib/grade';
 import { COMP_LANGUAGES, compLanguageFromCode, languageCodeFromComp, type CompLanguage } from '@/src/lib/language';
+import { firstSoldImageUrl } from '@/src/services/comps/imageUrl';
 import { resolveQueryPhotoUri } from '@/src/services/comps/queryPhoto';
 import { chamber } from '@/src/theme/chamber';
 
@@ -55,14 +56,16 @@ export default function CompsScreen() {
     setLoading(true);
     setResult(null);
     try {
+      const next = await lookupComps(query);
       setSearchedPhotoUri(
         resolveQueryPhotoUri(query, {
           selectedCard: cards.find((card) => card.id === selectedId) ?? null,
           cards,
           draftPhotoUri: pendingPhotoUri,
+          apiImageUrl: firstSoldImageUrl(next.last5.solds),
         }),
       );
-      setResult(await lookupComps(query));
+      setResult(next);
     } finally {
       setLoading(false);
     }
@@ -158,7 +161,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardChip: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     borderRadius: 999,
     paddingHorizontal: 14,
@@ -185,7 +188,7 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: 12,
     backgroundColor: chamber.bgSunken,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     alignItems: 'center',
     justifyContent: 'center',

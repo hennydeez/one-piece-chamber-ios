@@ -18,7 +18,8 @@ export function cardMatchesCompQuery(card: CollectionCard, query: CompQuery): bo
 
 /**
  * Photo for a comps lookup. Selected card, then a matching collection card,
- * then an Add Card draft photo. Never invents solds.
+ * then an Add Card draft photo, then a live API image URL.
+ * Never invents solds or a URL.
  */
 export function resolveQueryPhotoUri(
   query: CompQuery,
@@ -26,6 +27,7 @@ export function resolveQueryPhotoUri(
     selectedCard?: CollectionCard | null;
     cards?: CollectionCard[];
     draftPhotoUri?: string | null;
+    apiImageUrl?: string | null;
   },
 ): string | null {
   const selected = options.selectedCard;
@@ -39,5 +41,8 @@ export function resolveQueryPhotoUri(
   if (match?.photoUri) return match.photoUri;
 
   const draft = options.draftPhotoUri?.trim() ?? '';
-  return draft || null;
+  if (draft) return draft;
+
+  const api = options.apiImageUrl?.trim() ?? '';
+  return api || null;
 }

@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     height: 260,
     borderRadius: 14,
     backgroundColor: chamber.bgSunken,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     alignItems: 'center',
     justifyContent: 'center',
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: chamber.panel,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: chamber.panelEdge,
     padding: 12,
   },
