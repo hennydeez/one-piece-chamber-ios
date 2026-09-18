@@ -37,7 +37,7 @@ export function CardForm({
     <View style={styles.form}>
       <View style={styles.photoBlock}>
         {draft.photoUri ? (
-          <Image source={{ uri: draft.photoUri }} style={styles.photo} />
+          <Image source={{ uri: draft.photoUri }} style={styles.photo} resizeMode="contain" />
         ) : (
           <View style={styles.placeholder}>
             <ChamberMark size={64} />
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: '100%',
-    height: 220,
+    height: 280,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: chamber.panelEdge,

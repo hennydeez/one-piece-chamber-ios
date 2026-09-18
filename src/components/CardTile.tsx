@@ -16,7 +16,7 @@ export function CardTile({ card, onPress }: { card: CollectionCard; onPress: () 
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tile, pressed && styles.pressed]}>
       <View style={styles.photo}>
         {card.photoUri ? (
-          <Image source={{ uri: card.photoUri }} style={styles.image} />
+          <Image source={{ uri: card.photoUri }} style={styles.image} resizeMode="contain" />
         ) : (
           <ChamberMark size={56} />
         )}

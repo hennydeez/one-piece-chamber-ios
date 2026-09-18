@@ -78,7 +78,7 @@ export default function CardDetailScreen() {
     <ChamberScreen title={card.cardCode} subtitle={`${card.type}${card.grade ? ` ${card.grade}` : ''} · ${card.language}`}>
       <View style={styles.photo}>
         {card.photoUri ? (
-          <Image source={{ uri: card.photoUri }} style={styles.image} />
+          <Image source={{ uri: card.photoUri }} style={styles.image} resizeMode="contain" />
         ) : (
           <ChamberMark size={80} />
         )}
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     color: chamber.muted,
   },
   photo: {
-    height: 260,
+    height: 320,
     borderRadius: 14,
     backgroundColor: chamber.bgSunken,
     borderWidth: 1.5,

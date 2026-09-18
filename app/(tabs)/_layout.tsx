@@ -1,8 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import { appVersionLabel } from '@/src/lib/appVersion';
 import { chamber } from '@/src/theme/chamber';
 
 export default function TabLayout() {
@@ -19,11 +17,6 @@ export default function TabLayout() {
         headerStyle: { backgroundColor: chamber.bgElevated },
         headerTintColor: chamber.goldSoft,
         headerShown: useClientOnlyValue(false, true),
-        headerRight: () => (
-          <Text style={{ color: chamber.faint, fontSize: 12, fontWeight: '600', marginRight: 16 }}>
-            {appVersionLabel()}
-          </Text>
-        ),
         sceneStyle: { backgroundColor: chamber.bg },
       }}>
       <Tabs.Screen

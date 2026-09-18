@@ -131,7 +131,7 @@ export default function CompsScreen() {
         <View style={styles.results}>
           <View style={styles.photo}>
             {searchedPhotoUri ? (
-              <Image source={{ uri: searchedPhotoUri }} style={styles.photoImage} />
+              <Image source={{ uri: searchedPhotoUri }} style={styles.photoImage} resizeMode="contain" />
             ) : (
               <ChamberMark size={72} />
             )}
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   photo: {
-    height: 220,
+    height: 280,
     borderRadius: 12,
     backgroundColor: chamber.bgSunken,
     borderWidth: 1.5,
