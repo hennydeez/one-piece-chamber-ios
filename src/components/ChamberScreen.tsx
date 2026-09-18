@@ -58,15 +58,17 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   kicker: {
+    flexShrink: 1,
     color: chamber.gold,
     fontSize: 11,
     letterSpacing: 2.4,
     fontWeight: '700',
   },
   version: {
-    color: chamber.faint,
-    fontSize: 11,
-    fontWeight: '600',
+    flexShrink: 0,
+    color: chamber.goldSoft,
+    fontSize: 12,
+    fontWeight: '800',
   },
   title: {
     color: chamber.ink,

@@ -6,7 +6,11 @@ import { useChamber } from '@/src/context/ChamberContext';
 import { frameKindFromCardType } from '@/src/lib/cardFrame';
 import { cropLibraryPhoto } from '@/src/lib/cropPhoto';
 import { draftFromCard, emptyDraft, type CardDraft, type CollectionCard } from '@/src/models/card';
-import { isOpCardCode, lookupCardImage } from '@/src/services/comps/lookupCardImage';
+import {
+  isOpCardCode,
+  lookupCardImage,
+  type CardImageOption,
+} from '@/src/services/comps/lookupCardImage';
 import { applyOcrPrefill } from '@/src/services/ocr/applyOcrPrefill';
 import { OCR_FAILED, expoOcrService } from '@/src/services/ocr/ocrService';
 import { chamber } from '@/src/theme/chamber';
@@ -14,6 +18,7 @@ import { CardForm } from './CardForm';
 import { ChamberScreen } from './ChamberScreen';
 import { GoldButton } from './GoldButton';
 import { PhotoConfirm } from './PhotoConfirm';
+import { PrintImagePicker } from './PrintImagePicker';
 
 interface Props {
   existing?: CollectionCard;
@@ -41,10 +46,14 @@ export function CardDraftEditor({
   const [saving, setSaving] = useState(false);
   const [reviewUri, setReviewUri] = useState<string | null>(null);
   const [reviewBusy, setReviewBusy] = useState(false);
+  const [printOptions, setPrintOptions] = useState<CardImageOption[]>([]);
+  const [pendingPrint, setPendingPrint] = useState<CardImageOption | null>(null);
   const userPhotoRef = useRef(Boolean(existing?.photoUri));
 
   const ingestPhoto = useCallback(async (uri: string) => {
     userPhotoRef.current = true;
+    setPrintOptions([]);
+    setPendingPrint(null);
     setPhotoHint(null);
     setPhotoBusy(false);
     setDraft((current) => ({ ...current, photoUri: uri }));
@@ -101,6 +110,8 @@ export function CardDraftEditor({
     if (!isOpCardCode(cardCode)) {
       setPhotoHint(null);
       setPhotoBusy(false);
+      setPrintOptions([]);
+      setPendingPrint(null);
       setDraft((current) => (current.photoUri ? { ...current, photoUri: null } : current));
       return;
     }
@@ -109,6 +120,8 @@ export function CardDraftEditor({
     const timer = setTimeout(() => {
       void (async () => {
         setPhotoBusy(true);
+        setPrintOptions([]);
+        setPendingPrint(null);
         setDraft((current) => (current.photoUri ? { ...current, photoUri: null } : current));
         const found = await lookupCardImage({
           cardCode,
@@ -119,7 +132,12 @@ export function CardDraftEditor({
         });
         if (cancelled || userPhotoRef.current) return;
         setPhotoHint(found.message);
-        setDraft((current) => ({ ...current, photoUri: found.imageUrl }));
+        if (found.options.length > 1) {
+          setPrintOptions(found.options);
+          setDraft((current) => ({ ...current, photoUri: null }));
+        } else {
+          setDraft((current) => ({ ...current, photoUri: found.imageUrl }));
+        }
         setPhotoBusy(false);
       })();
     }, 400);
@@ -135,7 +153,7 @@ export function CardDraftEditor({
     setSaveError(null);
     try {
       let toSave = draft;
-      if (!userPhotoRef.current) {
+      if (!userPhotoRef.current && !draft.photoUri) {
         const found = await lookupCardImage({
           cardCode: draft.cardCode,
           type: draft.type,
@@ -144,12 +162,19 @@ export function CardDraftEditor({
           printNote: draft.printNote,
         });
         setPhotoHint(found.message);
+        if (found.options.length > 1) {
+          setPrintOptions(found.options);
+          setSaving(false);
+          return;
+        }
         toSave = { ...draft, photoUri: found.imageUrl };
       }
       const card = await saveDraft(toSave, existing);
       if (!existing) {
         setDraft(emptyDraft());
         userPhotoRef.current = false;
+        setPrintOptions([]);
+        setPendingPrint(null);
         setPhotoHint(null);
         setOcrMessage(null);
       }
@@ -174,6 +199,23 @@ export function CardDraftEditor({
         ocrMessage={ocrMessage}
         photoHint={photoHint}
         photoBusy={photoBusy}
+        belowPhoto={
+          printOptions.length > 1 ? (
+            <PrintImagePicker
+              options={printOptions}
+              selected={pendingPrint}
+              onSelect={setPendingPrint}
+              onConfirm={() => {
+                if (!pendingPrint) return;
+                setDraft((current) => ({ ...current, photoUri: pendingPrint.imageUrl }));
+                setPhotoHint(pendingPrint.label);
+                setPrintOptions([]);
+                setPendingPrint(null);
+              }}
+              onCancel={() => setPendingPrint(null)}
+            />
+          ) : null
+        }
         onCamera={() =>
           router.push({
             pathname: '/capture',

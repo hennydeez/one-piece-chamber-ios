@@ -9,6 +9,16 @@ import {
   parseOpCardCode,
 } from './lookupCardImage';
 
+const OP06_PRINTS_HTML = `
+<table class="card-prints-versions">
+  <tr><th>Print</th></tr>
+  <tr class="current"><td><a>Wings of the Captain<span class="prints-table-card-number"></span></a></td></tr>
+  <tr><td><a href="/cards/en/OP06-101?v=1">Wings of the Captain<span class="prints-table-card-number">aa</span></a></td></tr>
+  <tr><td><a href="/cards/en/OP06-101?v=3">Event Pack Vol.5<span class="prints-table-card-number"></span></a></td></tr>
+  <tr><td><a href="/cards/en/OP06-101?v=4">CS 25–26 Event Pack<span class="prints-table-card-number"></span></a></td></tr>
+</table>
+`;
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -163,6 +173,53 @@ describe('lookupCardImage', () => {
     assert.equal(found.source, 'limitless');
     assert.equal(found.message, 'No slab photo — using card art.');
     assert.ok(found.imageUrl?.includes('OP01-001_EN.webp'));
+  });
+
+  it('narrows OP06-101 + CS 25-26 event pack to that confirmed print', async () => {
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('limitlesstcg.com/cards/')) {
+        return new Response(OP06_PRINTS_HTML, { headers: { 'content-type': 'text/html' } });
+      }
+      if (url.includes('OP06-101_p4_EN.webp')) return imageResponse();
+      return new Response('nope', { status: 404 });
+    }) as typeof fetch;
+
+    const found = await lookupCardImage(
+      { cardCode: 'OP06-101', type: 'Raw', printNote: 'cs 25-26 event pack' },
+      { fetchImpl },
+    );
+    assert.equal(
+      found.imageUrl,
+      'https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/OP06/OP06-101_p4_EN.webp',
+    );
+    assert.equal(found.options.length, 0);
+    assert.match(found.message, /CS 25–26 Event Pack/);
+  });
+
+  it('asks the user to pick when more than one print matches', async () => {
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('limitlesstcg.com/cards/')) {
+        return new Response(OP06_PRINTS_HTML, { headers: { 'content-type': 'text/html' } });
+      }
+      if (url.includes('OP06-101_p3_EN.webp') || url.includes('OP06-101_p4_EN.webp')) {
+        return imageResponse();
+      }
+      return new Response('nope', { status: 404 });
+    }) as typeof fetch;
+
+    const found = await lookupCardImage(
+      { cardCode: 'OP06-101', type: 'Raw', printNote: 'event pack' },
+      { fetchImpl },
+    );
+    assert.equal(found.imageUrl, null);
+    assert.equal(found.options.length, 2);
+    assert.deepEqual(
+      found.options.map((option) => option.label),
+      ['Event Pack Vol.5', 'CS 25–26 Event Pack'],
+    );
+    assert.equal(found.message, 'Several prints match. Pick one.');
   });
 
   it('returns no image when nothing confirms — does not invent', async () => {

@@ -1,5 +1,12 @@
 import { isSlab, type CardType } from '../../models/card';
 import { imageUrlFromPayload, readImageUrl } from './imageUrl';
+import {
+  fallbackPrintSlots,
+  parseLimitlessPrints,
+  printVariantCode,
+  type CatalogPrint,
+} from './limitlessPrints';
+import { printNoteMatchesLabel } from './printNoteMatch';
 
 /** Same baked-in Chamber comps.php as createCompsService — imageUrl only. */
 const DEFAULT_COMPS_IMAGE_ENDPOINT =
@@ -13,11 +20,20 @@ export const CARD_IMAGE_COMPS_TIMEOUT_MS = 4_000;
 
 export type CardImageSource = 'comps' | 'limitless' | 'official';
 
+export interface CardImageOption {
+  imageUrl: string;
+  label: string;
+  source: CardImageSource;
+  kind: 'slab' | 'raw';
+}
+
 export interface CardImageLookup {
   imageUrl: string | null;
   kind: 'slab' | 'raw' | null;
   source: CardImageSource | null;
   message: string;
+  /** Two or more confirmed prints — caller shows a picker. Never invented. */
+  options: CardImageOption[];
 }
 
 export interface CardImageQuery {
@@ -197,7 +213,101 @@ export async function imageUrlFromComps(
 }
 
 function noneResult(message: string): CardImageLookup {
-  return { imageUrl: null, kind: null, source: null, message };
+  return { imageUrl: null, kind: null, source: null, message, options: [] };
+}
+
+function uniqueResult(
+  option: CardImageOption,
+  message: string,
+): CardImageLookup {
+  return {
+    imageUrl: option.imageUrl,
+    kind: option.kind,
+    source: option.source,
+    message,
+    options: [],
+  };
+}
+
+function pickResult(options: CardImageOption[], message: string): CardImageLookup {
+  return {
+    imageUrl: null,
+    kind: options[0]?.kind ?? 'raw',
+    source: null,
+    message,
+    options,
+  };
+}
+
+async function loadCatalogPrints(
+  query: CardImageQuery,
+  fetchImpl: typeof fetch,
+  timeoutMs: number,
+): Promise<CatalogPrint[]> {
+  const parsed = parseOpCardCode(query.cardCode);
+  if (!parsed) return [];
+
+  const lang = catalogLanguage(query.language).toLowerCase();
+  const page = `https://onepiece.limitlesstcg.com/cards/${lang}/${parsed.baseCode}`;
+  try {
+    const response = await fetchImpl(page, {
+      signal: abortAfter(timeoutMs),
+      headers: { Accept: 'text/html' },
+    });
+    if (!response.ok) return [];
+    return parseLimitlessPrints(await response.text(), parsed.baseCode);
+  } catch {
+    return [];
+  }
+}
+
+async function confirmPrintOption(
+  print: CatalogPrint,
+  query: CardImageQuery,
+  fetchImpl: typeof fetch,
+): Promise<CardImageOption | null> {
+  const parsed = parseOpCardCode(query.cardCode);
+  if (!parsed) return null;
+  const lang = catalogLanguage(query.language);
+  const variant = printVariantCode(parsed.baseCode, print.index);
+  const urls = [
+    `${LIMITLESS_CDN}/${parsed.set}/${variant}_${lang}.webp`,
+    lang !== 'EN' ? `${LIMITLESS_CDN}/${parsed.set}/${variant}_EN.webp` : '',
+    `${OFFICIAL_EN_CARD_DIR}/${variant}.png`,
+  ].filter(Boolean);
+
+  const found = await firstConfirmedImageUrl(urls, fetchImpl);
+  if (!found) return null;
+  return {
+    imageUrl: found.url,
+    label: print.label,
+    source: found.source,
+    kind: 'raw',
+  };
+}
+
+/**
+ * Confirm catalog prints, optionally narrowed by print note.
+ * Returns unique / pick / none. Never invents a URL.
+ */
+export async function lookupCatalogPrints(
+  query: CardImageQuery,
+  fetchImpl: typeof fetch,
+  timeoutMs: number,
+): Promise<{ options: CardImageOption[]; filtered: boolean }> {
+  const note = query.printNote?.trim() ?? '';
+  const listed = await loadCatalogPrints(query, fetchImpl, timeoutMs);
+  const prints = listed.length > 0 ? listed : note ? fallbackPrintSlots() : [];
+  if (prints.length === 0) return { options: [], filtered: false };
+
+  const matched = note ? prints.filter((print) => printNoteMatchesLabel(note, print.label)) : prints;
+  const filtered = Boolean(note) && matched.length > 0;
+  const toConfirm = matched.length > 0 ? matched : prints;
+  const confirmed = (
+    await Promise.all(toConfirm.map((print) => confirmPrintOption(print, query, fetchImpl)))
+  ).filter((row): row is CardImageOption => row != null);
+
+  return { options: confirmed, filtered };
 }
 
 /**
@@ -218,17 +328,38 @@ export async function lookupCardImage(
   if (!parsed) return noneResult('No photo for this code.');
 
   const fetchImpl = options.fetchImpl ?? fetch;
+  const timeoutMs = options.timeoutMs ?? CARD_IMAGE_COMPS_TIMEOUT_MS;
   const slab = isSlab(query.type);
+  const printNote = query.printNote?.trim() ?? '';
 
   if (slab) {
     const compsUrl = await imageUrlFromComps(query, options);
     if (compsUrl) {
-      return {
-        imageUrl: compsUrl,
-        kind: 'slab',
-        source: 'comps',
-        message: `Slab photo for ${parsed.baseCode}.`,
-      };
+      return uniqueResult(
+        { imageUrl: compsUrl, label: 'Slab photo', source: 'comps', kind: 'slab' },
+        `Slab photo for ${parsed.baseCode}.`,
+      );
+    }
+  }
+
+  if (printNote) {
+    const catalogPrints = await lookupCatalogPrints(query, fetchImpl, timeoutMs);
+    if (catalogPrints.options.length === 1) {
+      const only = catalogPrints.options[0];
+      return uniqueResult(
+        only,
+        slab
+          ? `No slab photo — using ${only.label}.`
+          : `Card art for ${parsed.baseCode} · ${only.label}.`,
+      );
+    }
+    if (catalogPrints.options.length > 1) {
+      return pickResult(
+        catalogPrints.options,
+        catalogPrints.filtered
+          ? 'Several prints match. Pick one.'
+          : 'No print match — pick one.',
+      );
     }
   }
 
@@ -237,23 +368,19 @@ export async function lookupCardImage(
     fetchImpl,
   );
   if (catalog) {
-    return {
-      imageUrl: catalog.url,
-      kind: 'raw',
-      source: catalog.source,
-      message: slab ? 'No slab photo — using card art.' : `Card art for ${parsed.baseCode}.`,
-    };
+    return uniqueResult(
+      { imageUrl: catalog.url, label: parsed.baseCode, source: catalog.source, kind: 'raw' },
+      slab ? 'No slab photo — using card art.' : `Card art for ${parsed.baseCode}.`,
+    );
   }
 
   if (!slab) {
     const compsUrl = await imageUrlFromComps({ ...query, type: 'Raw' }, options);
     if (compsUrl) {
-      return {
-        imageUrl: compsUrl,
-        kind: 'raw',
-        source: 'comps',
-        message: `Card art for ${parsed.baseCode}.`,
-      };
+      return uniqueResult(
+        { imageUrl: compsUrl, label: parsed.baseCode, source: 'comps', kind: 'raw' },
+        `Card art for ${parsed.baseCode}.`,
+      );
     }
   }
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { CARD_TYPES, isSlab, type CardDraft, type CardType } from '@/src/models/card';
 import { chamber } from '@/src/theme/chamber';
@@ -16,6 +17,7 @@ interface Props {
   ocrMessage?: string | null;
   photoHint?: string | null;
   photoBusy?: boolean;
+  belowPhoto?: ReactNode;
   onCamera: () => void;
   onLibrary: () => void;
 }
@@ -26,6 +28,7 @@ export function CardForm({
   ocrMessage,
   photoHint,
   photoBusy,
+  belowPhoto,
   onCamera,
   onLibrary,
 }: Props) {
@@ -55,6 +58,7 @@ export function CardForm({
           </View>
         </View>
         {photoHint ? <Text style={styles.photoHint}>{photoHint}</Text> : null}
+        {belowPhoto}
         {ocrMessage ? <Text style={styles.ocr}>{ocrMessage}</Text> : null}
       </View>
 
@@ -95,7 +99,7 @@ export function CardForm({
       <Field
         label="Print note"
         value={draft.printNote}
-        placeholder="Alt art, manga…"
+        placeholder="Alt art, CS event pack…"
         onChangeText={(printNote) => set('printNote', printNote)}
       />
       <ChipRow
