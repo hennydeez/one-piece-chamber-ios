@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { CardDraft, CollectionCard } from '@/src/models/card';
 import { draftToPersistable, validateDraft } from '@/src/db/cardsRepo';
 import { compsService } from '@/src/services/comps';
-import type { CompQuery } from '@/src/models/comps';
+import type { CompQuery, CompsLookupOptions } from '@/src/models/comps';
 import { ChamberContext } from './ChamberContext';
 
 /**
@@ -36,8 +36,8 @@ export function ChamberProvider({ children }: { children: ReactNode }) {
     [cards],
   );
 
-  const lookupComps = useCallback(async (query: CompQuery) => {
-    return compsService.getLastCompletedSolds(query);
+  const lookupComps = useCallback(async (query: CompQuery, options?: CompsLookupOptions) => {
+    return compsService.getLastCompletedSolds(query, options);
   }, []);
 
   const value = useMemo(

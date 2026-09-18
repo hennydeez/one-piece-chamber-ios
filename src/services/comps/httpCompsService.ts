@@ -1,7 +1,33 @@
-import type { CompQuery, CompSold, CompsService, CompsResult } from '../../models/comps';
-import { readImageUrl } from './imageUrl';
-import { buildCompsResult, emptyCompsResult } from './last5Avg';
+import type { CompQuery, CompSold, CompsLookupOptions, CompsService, CompsResult } from '../../models/comps';
+import { imageUrlFromPayload, readImageUrl } from './imageUrl';
+import {
+  DETAILED_SOURCE_MESSAGE,
+  QUICK_SOURCE_MESSAGE,
+  buildCompsResult,
+  emptyCompsResult,
+} from './last5Avg';
 import { isSampleSold } from './sourceLink';
+
+export { DETAILED_SOURCE_MESSAGE, QUICK_SOURCE_MESSAGE };
+export const COMPS_QUOTA_MESSAGE = 'Comps quota exceeded. Try again.';
+
+export function sourceMessageFromPayload(payload: unknown, fallback: string): string {
+  if (!payload || typeof payload !== 'object') return fallback;
+  const raw = (payload as { sourceMessage?: unknown }).sourceMessage;
+  if (typeof raw !== 'string' || !raw.trim()) return fallback;
+  const msg = raw.trim();
+  if (/quota/i.test(msg)) return COMPS_QUOTA_MESSAGE;
+  return msg.length > 90 ? fallback : msg;
+}
+
+export function payloadSourceFailed(payload: unknown, soldCount: number): boolean {
+  if (soldCount > 0) return false;
+  if (!payload || typeof payload !== 'object') return false;
+  const status = (payload as { sourceStatus?: unknown }).sourceStatus;
+  if (status === 'error') return true;
+  const raw = (payload as { sourceMessage?: unknown }).sourceMessage;
+  return typeof raw === 'string' && /quota|error|fail|couldn/i.test(raw);
+}
 
 function asCompletedSold(value: unknown): CompSold | null {
   if (!value || typeof value !== 'object') return null;
@@ -74,7 +100,8 @@ export class HttpCompsService implements CompsService {
     readonly timeoutMs = COMPS_FETCH_TIMEOUT_MS,
   ) {}
 
-  async getLastCompletedSolds(query: CompQuery): Promise<CompsResult> {
+  async getLastCompletedSolds(query: CompQuery, options?: CompsLookupOptions): Promise<CompsResult> {
+    const lookupMode = options?.mode === 'detailed' ? 'detailed' : 'quick';
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
@@ -85,6 +112,10 @@ export class HttpCompsService implements CompsService {
       if (query.grade) url.searchParams.set('grade', query.grade);
       if (query.printNote) url.searchParams.set('printNote', query.printNote);
       url.searchParams.set('completed', 'true');
+      url.searchParams.set('months', '6');
+      if (lookupMode === 'detailed') {
+        url.searchParams.set('mode', 'detailed');
+      }
 
       const response = await fetch(url.toString(), { signal: controller.signal });
       if (!response.ok) {
@@ -92,6 +123,7 @@ export class HttpCompsService implements CompsService {
           query,
           'error',
           `Comps source failed (HTTP ${response.status}).`,
+          lookupMode,
         );
       }
 
@@ -107,6 +139,8 @@ export class HttpCompsService implements CompsService {
           query,
           'error',
           'Comps source sent a bad response.',
+          lookupMode,
+          imageUrlFromPayload(payload),
         );
       }
 
@@ -114,18 +148,32 @@ export class HttpCompsService implements CompsService {
         .map(asCompletedSold)
         .filter((row): row is CompSold => row != null)
         .filter((row) => !isSampleSold(row));
+      const imageUrl = imageUrlFromPayload(payload, solds);
+
+      if (payloadSourceFailed(payload, solds.length)) {
+        return emptyCompsResult(
+          query,
+          'error',
+          sourceMessageFromPayload(payload, COMPS_UNREACHABLE_MESSAGE),
+          lookupMode,
+          imageUrl,
+        );
+      }
 
       return buildCompsResult(
         query,
         solds,
         'live',
-        'Live solds. Newest 5.',
+        lookupMode === 'detailed' ? DETAILED_SOURCE_MESSAGE : QUICK_SOURCE_MESSAGE,
+        undefined,
+        lookupMode,
+        imageUrl,
       );
     } catch (error) {
       if (isAbortError(error) || controller.signal.aborted) {
-        return emptyCompsResult(query, 'error', COMPS_TIMEOUT_MESSAGE);
+        return emptyCompsResult(query, 'error', COMPS_TIMEOUT_MESSAGE, lookupMode);
       }
-      return emptyCompsResult(query, 'error', COMPS_UNREACHABLE_MESSAGE);
+      return emptyCompsResult(query, 'error', COMPS_UNREACHABLE_MESSAGE, lookupMode);
     } finally {
       clearTimeout(timeoutId);
     }

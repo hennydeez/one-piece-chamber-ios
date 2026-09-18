@@ -1,5 +1,5 @@
 /** Fallback only if Expo config is missing — keep in sync with app.json. */
-export const APP_VERSION_FALLBACK = '0.8.0';
+export const APP_VERSION_FALLBACK = '0.9.0';
 
 export function versionFromExpoConfig(
   config: { version?: string | null } | null | undefined,

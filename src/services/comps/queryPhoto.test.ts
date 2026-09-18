@@ -74,10 +74,20 @@ describe('resolveQueryPhotoUri', () => {
     );
   });
 
-  it('uses a live API image URL when no collection or draft photo exists', () => {
+  it('falls back to a live API image URL when searching by card code', () => {
     assert.equal(
-      resolveQueryPhotoUri(query, { apiImageUrl: 'https://cdn.example/op01-001.jpg' }),
+      resolveQueryPhotoUri(query, {
+        cards: [card({ id: 'bare' })],
+        apiImageUrl: 'https://cdn.example/op01-001.jpg',
+      }),
       'https://cdn.example/op01-001.jpg',
+    );
+  });
+
+  it('keeps the API image when solds are empty — does not invent a URL', () => {
+    assert.equal(
+      resolveQueryPhotoUri(query, { apiImageUrl: 'https://cdn.example/empty-solds.jpg' }),
+      'https://cdn.example/empty-solds.jpg',
     );
   });
 

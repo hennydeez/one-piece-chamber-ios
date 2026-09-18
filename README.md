@@ -11,15 +11,22 @@ This repository does **not** ship licensed One Piece artwork. The UI is an origi
 | App name | One Piece Chamber |
 | Bundle id | `com.hennydeez.onepiecechamber` |
 | Tabs | Collections · Add Card · Comps |
-| App version | `0.8.0` |
+| App version | `0.9.0` |
 
-## What v0.8.0 does
+## What v0.9.0 does
 
-- **Version in the header** — `v0.8.0` sits quietly next to **ONE PIECE CHAMBER** (and in the nav on web / card detail). It comes from `app.json` via `Constants.expoConfig`.
+- **Version in the header** — `v0.9.0` sits quietly next to **ONE PIECE CHAMBER**. It comes from `app.json` via `Constants.expoConfig`.
 - **Add Card without a photo** — type an OP code (e.g. `OP01-001`). Chamber looks up a real picture:
   - **Raw** uses confirmed card art from [Limitless TCG](https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/one-piece/) (`{set}/{code}_{EN|JP}.webp`), then the official Bandai card list (`en.onepiece-cardgame.com/images/cardlist/card/{code}.png`).
   - **PSA / BGS / TAG** prefer a graded listing photo when Chamber `comps.php` sends a real `imageUrl`. If it does not, the form says **No slab photo — using card art.** and uses the raw catalog image, or **No photo for this code.** Nothing is invented. URLs are confirmed with HEAD/GET (`image/*`) before they are shown.
 - **Brighter orange** — same orange + white chamber look, louder orange on buttons, chips, and section edges. Cards, fields, and chips use a clearer orange border.
+
+## What v0.8.0 does
+
+- **Quick / Last 6 months comps** — Get comps opens **Quick** (newest 5 solds + **Last-5 avg (AUD)**). **Last 6 months** is a View chip: six calendar months, newest first, with n / month avg AUD / that month’s solds, plus a monthly avg bar chart. Empty months stay empty. Toggle is instant on the solds already returned. A second SoldComps call only runs when Quick was live n=0. Same toggle on the Comps tab and card detail.
+- **Edit saved cards** — Card detail **Edit** reuses the Add Card form and `saveDraft` storage. **Cancel** goes back with no write.
+- **Sales history** — Card detail **Sales history** loads real completed solds for that card, or an honest empty / error state. Not a dead button.
+- **Comps photo by card code** — After Get comps (Quick and Last 6 months), the card picture shows from a matching collection / draft photo, or a live `imageUrl` when the API sent one. The picture still shows when solds are empty if that URL exists. Nothing invented.
 
 ## What v0.7.0 does
 
@@ -186,12 +193,14 @@ EAS compiles in the cloud, so these commands are valid on Windows. You do not ne
 
 ```
 app/(tabs)/          Collections, Add Card, Comps
-app/card/[id].tsx    Detail
+app/card/[id].tsx    Detail (Edit + Sales history + Get comps)
+app/edit/[id].tsx    Edit saved card (same form / storage as Add Card)
+app/sales/[id].tsx   Sales history
 app/capture.tsx      expo-camera modal
 src/db/              SQLite schema + repository
 src/models/          Card + comps types
 src/services/ocr/    OCR interface + parser
-src/services/comps/  CompsService, Scout match, Last-5 avg
+src/services/comps/  CompsService, Scout match, Last-5 avg, last-6-month buckets
 ```
 
 ## Honesty rules

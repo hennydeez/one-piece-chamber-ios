@@ -19,7 +19,7 @@ export function cardMatchesCompQuery(card: CollectionCard, query: CompQuery): bo
 /**
  * Photo for a comps lookup. Selected card, then a matching collection card,
  * then an Add Card draft photo, then a live API image URL.
- * Never invents solds or a URL.
+ * Shows even when solds are empty. Never invents solds or a URL.
  */
 export function resolveQueryPhotoUri(
   query: CompQuery,

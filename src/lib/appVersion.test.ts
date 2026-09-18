@@ -4,7 +4,7 @@ import { APP_VERSION_FALLBACK, appVersionLabel, versionFromExpoConfig } from './
 
 describe('versionFromExpoConfig', () => {
   it('reads Constants.expoConfig.version', () => {
-    assert.equal(versionFromExpoConfig({ version: '0.8.0' }), '0.8.0');
+    assert.equal(versionFromExpoConfig({ version: '0.9.0' }), '0.9.0');
     assert.equal(versionFromExpoConfig({ version: ' 1.2.3 ' }), '1.2.3');
   });
 
@@ -18,6 +18,6 @@ describe('versionFromExpoConfig', () => {
 
 describe('appVersionLabel', () => {
   it('prefixes a short v', () => {
-    assert.equal(appVersionLabel('0.8.0'), 'v0.8.0');
+    assert.equal(appVersionLabel('0.9.0'), 'v0.9.0');
   });
 });

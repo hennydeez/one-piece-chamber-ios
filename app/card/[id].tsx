@@ -1,16 +1,17 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Image, StyleSheet, Text, View } from 'react-native';
-import { ChamberMark } from '@/src/components/ChamberMark';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { ChamberScreen } from '@/src/components/ChamberScreen';
 import { CompsLookupProgress } from '@/src/components/CompsLookupProgress';
+import { CompsPhoto } from '@/src/components/CompsPhoto';
+import { CompsResults } from '@/src/components/CompsResults';
 import { GoldButton } from '@/src/components/GoldButton';
-import { Last5SoldTable } from '@/src/components/Last5SoldTable';
+import { useCompsLookup } from '@/src/components/useCompsLookup';
 import { useChamber } from '@/src/context/ChamberContext';
 import { formatPurchaseDate } from '@/src/lib/dates';
+import { compsViewMessage } from '@/src/services/comps/last5Avg';
 import { formatAud } from '@/src/lib/money';
 import type { CollectionCard } from '@/src/models/card';
-import type { CompsResult } from '@/src/models/comps';
 import { chamber } from '@/src/theme/chamber';
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -25,14 +26,26 @@ function Row({ label, value }: { label: string; value: string }) {
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { findCard, removeCard, lookupComps } = useChamber();
-  const [card, setCard] = useState<CollectionCard | null>(null);
-  const [comps, setComps] = useState<CompsResult | null>(null);
-  const [loadingComps, setLoadingComps] = useState(false);
+  const [card, setCard] = useState<CollectionCard | null | undefined>(undefined);
+  const { result: comps, view, loading: loadingComps, runLookup, changeView } = useCompsLookup(lookupComps);
 
-  useEffect(() => {
-    if (!id) return;
-    void findCard(id).then(setCard);
-  }, [id, findCard]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!id) {
+        setCard(null);
+        return;
+      }
+      void findCard(id).then(setCard);
+    }, [id, findCard]),
+  );
+
+  if (card === undefined) {
+    return (
+      <ChamberScreen title="Card">
+        <Text style={styles.muted}>Loading…</Text>
+      </ChamberScreen>
+    );
+  }
 
   if (!card) {
     return (
@@ -57,32 +70,21 @@ export default function CardDetailScreen() {
   };
 
   const loadComps = async () => {
-    setLoadingComps(true);
-    setComps(null);
-    try {
-      setComps(
-        await lookupComps({
-          cardCode: card.cardCode,
-          printNote: card.printNote,
-          language: card.language,
-          type: card.type,
-          grade: card.grade,
-        }),
-      );
-    } finally {
-      setLoadingComps(false);
-    }
+    await runLookup(
+      {
+        cardCode: card.cardCode,
+        printNote: card.printNote,
+        language: card.language,
+        type: card.type,
+        grade: card.grade,
+      },
+      'quick',
+    );
   };
 
   return (
     <ChamberScreen title={card.cardCode} subtitle={`${card.type}${card.grade ? ` ${card.grade}` : ''} · ${card.language}`}>
-      <View style={styles.photo}>
-        {card.photoUri ? (
-          <Image source={{ uri: card.photoUri }} style={styles.image} resizeMode="contain" />
-        ) : (
-          <ChamberMark size={80} />
-        )}
-      </View>
+      <CompsPhoto uri={card.photoUri} height={320} />
       <View style={styles.sheet}>
         <Row label="Type" value={card.type} />
         <Row label="Grade" value={card.grade ?? '—'} />
@@ -93,12 +95,14 @@ export default function CardDetailScreen() {
         <Row label="Price paid" value={formatAud(card.purchasePriceAud)} />
         <Row label="Notes" value={card.notes ?? '—'} />
       </View>
+      <GoldButton label="Edit" onPress={() => router.push(`/edit/${card.id}`)} />
+      <GoldButton label="Sales history" onPress={() => router.push(`/sales/${card.id}`)} />
       <GoldButton label="Get comps" onPress={loadComps} loading={loadingComps} />
       <CompsLookupProgress loading={loadingComps} />
       {comps ? (
         <View style={styles.comps}>
-          <Text style={styles.banner}>{comps.sourceMessage}</Text>
-          <Last5SoldTable avg={comps.last5} />
+          <Text style={styles.banner}>{compsViewMessage(comps, view)}</Text>
+          <CompsResults result={comps} view={view} onViewChange={(next) => void changeView(next)} />
         </View>
       ) : null}
       <GoldButton label="Delete" tone="danger" onPress={confirmDelete} />
@@ -109,20 +113,6 @@ export default function CardDetailScreen() {
 const styles = StyleSheet.create({
   muted: {
     color: chamber.muted,
-  },
-  photo: {
-    height: 320,
-    borderRadius: 14,
-    backgroundColor: chamber.bgSunken,
-    borderWidth: 1.5,
-    borderColor: chamber.panelEdge,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
   },
   sheet: {
     backgroundColor: chamber.panel,
