@@ -2,15 +2,29 @@ import type { CompsService } from '../../models/comps';
 import { HttpCompsService } from './httpCompsService';
 
 export {
+  DETAILED_SOURCE_MESSAGE,
   LAST5_AVG_LABEL,
+  QUICK_SOURCE_MESSAGE,
   buildCompsResult,
+  compsViewMessage,
   emptyCompsResult,
   honestCountLabel,
   selectLast5,
+  selectLiveSolds,
   selectMergedLast5,
+  shouldRefetchDetailed,
   stampLast5Avg,
   stampMergedLast5Avg,
 } from './last5Avg';
+export {
+  DETAILED_MONTHS,
+  bucketSoldsByMonth,
+  calendarMonthKey,
+  chartBarsFromMonths,
+  formatAudCompact,
+  formatMonthLabel,
+  lastCalendarMonthKeys,
+} from './monthBuckets';
 export { isNoiseTitle, withoutNoiseTitles } from './noiseTitle';
 export { filterMatchingSolds, matchesScoutRules } from './scoutMatch';
 export { UNCONFIGURED_COMPS_MESSAGE, UnconfiguredCompsService } from './unconfiguredCompsService';
@@ -22,6 +36,7 @@ export {
   resolveSourceLabel,
   resolveSourceUrl,
 } from './sourceLink';
+export { firstSoldImageUrl, imageUrlFromPayload, readImageUrl } from './imageUrl';
 export { cardMatchesCompQuery, resolveQueryPhotoUri } from './queryPhoto';
 
 /** Public Chamber comps.php. Baked in so Expo Go works without eas.json / .env. */

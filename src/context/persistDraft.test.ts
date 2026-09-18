@@ -68,6 +68,42 @@ describe('persistValidatedDraft', () => {
     assert.equal(card.purchaseDate, '2026-09-15');
   });
 
+  it('updates an existing card in place and keeps its id', async () => {
+    const existing: CollectionCard = {
+      id: 'crd_keep',
+      cardCode: 'OP01-001',
+      type: 'Raw',
+      grade: null,
+      certNumber: null,
+      printNote: null,
+      language: 'EN',
+      purchaseDate: '2026-01-01',
+      purchasePriceAud: 10,
+      notes: 'old',
+      photoUri: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    };
+    const saved: CollectionCard[] = [];
+    const card = await persistValidatedDraft(
+      draft({ cardCode: 'OP01-024', notes: 'new note', purchaseDate: '17-09-2026' }),
+      existing,
+      {
+        persistPhoto: async (uri) => uri,
+        upsert: async (row) => {
+          saved.push(row);
+        },
+      },
+    );
+    assert.equal(card.id, 'crd_keep');
+    assert.equal(card.cardCode, 'OP01-024');
+    assert.equal(card.notes, 'new note');
+    assert.equal(card.purchaseDate, '2026-09-17');
+    assert.equal(card.createdAt, existing.createdAt);
+    assert.equal(saved.length, 1);
+    assert.equal(saved[0]?.id, 'crd_keep');
+  });
+
   it('rejects an invalid draft before upsert', async () => {
     let upserts = 0;
     await assert.rejects(

@@ -24,5 +24,8 @@ describe('UnconfiguredCompsService', () => {
     assert.equal(result.fixed.solds.length, 0);
     assert.equal(result.auction.solds.length, 0);
     assert.equal(result.fixed.averageAud, null);
+    assert.equal(result.solds.length, 0);
+    assert.equal(result.months.length, 6);
+    assert.equal(result.lookupMode, 'quick');
   });
 });

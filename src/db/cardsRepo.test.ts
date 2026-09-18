@@ -50,6 +50,25 @@ describe('cardsRepo helpers', () => {
     assert.equal(card.type, 'Raw');
   });
 
+  it('keeps an existing card id when editing', () => {
+    const existing = draftToPersistable({
+      ...emptyDraft(),
+      cardCode: 'OP01-001',
+    });
+    const updated = draftToPersistable(
+      {
+        ...emptyDraft(),
+        cardCode: 'OP01-024',
+        notes: 'edited',
+      },
+      existing,
+    );
+    assert.equal(updated.id, existing.id);
+    assert.equal(updated.cardCode, 'OP01-024');
+    assert.equal(updated.notes, 'edited');
+    assert.equal(updated.createdAt, existing.createdAt);
+  });
+
   it('stores purchase date as ISO YYYY-MM-DD', () => {
     const card = draftToPersistable({
       ...emptyDraft(),
